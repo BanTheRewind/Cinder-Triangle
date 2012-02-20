@@ -1,0 +1,29 @@
+Delaunay triangulation for Cinder. It wraps and is based on
+Jonathan Richard Shewchuk's classic "triangle.c".
+
+The triangulation result of this block is the exact same as Cinder's 
+triangulation, however the output is very different. Instead of creating 
+a TriMesh2D, ciTri outputs a vector of Triangle objects, containing 
+position and size data for each triangle.
+
+This is especially useful in 2D physics or when breaking up an outline.
+
+See it in use here:
+http://bantherewind.com/kinect-opencv-delaunay-triangulation-box2d
+
+More info here:
+http://en.wikipedia.org/wiki/Delaunay_triangulation
+
+WISH LIST:
+
+- 3D triangulation
+- Options to use Voronoi math to subdivide the triangles to 
+  more even shapes
+
+
+-----------------------------------------
+
+http://www.bantherewind.com
+http://www.libcinder.org
+
+bantherewind@gmail.com
