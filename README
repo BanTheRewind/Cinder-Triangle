@@ -16,8 +16,9 @@ http://en.wikipedia.org/wiki/Delaunay_triangulation
 
 This is a work in progress.  On the to do list...
 
+- rotate( float degrees );
 - bool intersects( const Triangle & triangle );
-- 3D terrain sample
+- 3D terrain sample ( 2D tri + Z for height )
 - XCode sample projects and static lib ( OSX + iOS )
 
 -----------------------------------------
