@@ -104,10 +104,10 @@ public:
 	// Setters
 	void				setApex( const ci::Vec2f & apex );
 	void				setArea( float area );
-	void				setCentroid( const ci::Vec2f & centroid );
 	void				setDestination( const ci::Vec2f & destination );
 	void				setId( int32_t id );
 	void				setOrigin( const ci::Vec2f & origin );
+	void				setPosition( const ci::Vec2f & position );
 
 private:
 
@@ -119,5 +119,7 @@ private:
 	ci::Vec2f			mCentroid;
 	int32_t				mId;
 	ci::Vec2f			mPrevCentroid;
+
+	void				setCentroid( const ci::Vec2f & centroid );
 
 };

@@ -66,20 +66,6 @@ Vec2f Triangle::calcCentroid( const Vec2f & a, const Vec2f & b, const Vec2f & c 
 
 }
 
-// Move triangle
-void Triangle::move( const Vec2f & offset )
-{
-
-	// Move all points
-	mApex += offset;
-	mCentroid += offset;
-	mDestination += offset;
-	
-	// Move centroid to update velocity
-	setCentroid( mCentroid + offset );
-
-}
-
 // Convert point list into Delaunay triangles
 vector<Triangle> Triangle::triangulate( const vector<Vec2f> & aPoints, uint32_t aResolution )
 {
@@ -306,6 +292,20 @@ Vec2f Triangle::getVelocity() const
 	return mCentroid - mPrevCentroid; 
 }
 
+// Move triangle
+void Triangle::move( const Vec2f & offset )
+{
+
+	// Move all points
+	mApex += offset;
+	mCentroid += offset;
+	mDestination += offset;
+
+	// Move centroid to update velocity
+	setCentroid( mCentroid + offset );
+
+}
+
 // Point setter shortcuts
 void Triangle::a( const Vec2f & origin )
 {
@@ -345,4 +345,16 @@ void Triangle::setId( int32_t id )
 void Triangle::setOrigin( const Vec2f & origin )
 {
 	mOrigin = origin;
+}
+void Triangle::setPosition( const ci::Vec2f & position )
+{
+	
+	// Move each point
+	mApex = mApex - mCentroid + position;
+	mDestination = mDestination - mCentroid + position;
+	mOrigin = mOrigin - mCentroid + position;
+
+	// Update centroid
+	setCentroid( position );
+
 }
