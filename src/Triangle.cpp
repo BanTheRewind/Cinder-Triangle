@@ -39,8 +39,46 @@
 
 // Imports
 using namespace ci;
+using namespace ci::app;
 using namespace tpp;
 using namespace std;
+
+// Calculate area of a triangle
+float Triangle::calcArea( const Vec2f & a, const Vec2f & b, const Vec2f & c )
+{
+
+	// Get length of each side
+	float xod( a.x - b.x );
+	float yod( a.y - b.y );
+	float xda( b.x - c.x );
+	float yda( b.y - c.y );
+
+	// Area is half times base times height
+	return 0.5f * ( xod * yda - yod * xda );
+
+}
+
+// Calculate centroid from points
+Vec2f Triangle::calcCentroid( const Vec2f & a, const Vec2f & b, const Vec2f & c ) {
+
+	// The centroid is one third the sum of the points
+	return ( a + b + c ) / 3.0f;
+
+}
+
+// Move triangle
+void Triangle::move( const Vec2f & offset )
+{
+
+	// Move all points
+	mApex += offset;
+	mCentroid += offset;
+	mDestination += offset;
+	
+	// Move centroid to update velocity
+	setCentroid( mCentroid + offset );
+
+}
 
 // Convert point list into Delaunay triangles
 vector<Triangle> Triangle::triangulate( const vector<Vec2f> & aPoints, uint32_t aResolution )
@@ -68,6 +106,9 @@ vector<Triangle> Triangle::triangulate( const vector<Vec2f> & aPoints, uint32_t 
 	Delaunay delaunay( positions );
 	delaunay.Triangulate();
 
+	// Triangle IDs
+	int32_t id = 0;
+
 	// Iterate through triangles
     for ( Delaunay::fIterator triIt = delaunay.fbegin(); triIt != delaunay.fend(); ++triIt ) {
 
@@ -87,16 +128,15 @@ vector<Triangle> Triangle::triangulate( const vector<Vec2f> & aPoints, uint32_t 
 
 		// Find center of triangle
 		Vec2f centroid = Vec2f(
-			( triangle[0].x + triangle[1].x + triangle[2].x ) / 3.0f, 
-			( triangle[0].y + triangle[1].y + triangle[2].y ) / 3.0f
+			( triangle[ 0 ].x + triangle[ 1 ].x + triangle[ 2 ].x ) / 3.0f, 
+			( triangle[ 0 ].y + triangle[ 1 ].y + triangle[ 2 ].y ) / 3.0f
 		);
 
 		// Initialize properties to test triangle position
-		int32_t counter = 0;
 		Vec2f point = aPoints[ 0 ];
 
 		// Iterate through points
-		int32_t id = 0;
+		int32_t counter = 0;
 		for ( vector<Vec2f>::const_iterator pointIt = aPoints.begin(); pointIt != aPoints.end(); ++pointIt ) {
 
 			// Compare centroid of this triangle to the previous one
@@ -132,46 +172,88 @@ vector<Triangle> Triangle::triangulate( const vector<Vec2f> & aPoints, uint32_t 
 
 }
 
-//! Constructor
-Triangle::Triangle( const ci::Vec2f & origin, const ci::Vec2f & destination, const ci::Vec2f & apex, 
-					int32_t id, float area, const ci::Vec2f & centroid ) 
-	: mApex( apex ), mArea( 0.0f ), mCentroid( centroid ), mDestination( destination ), mId( id ), 
+// Constructor
+Triangle::Triangle( const Vec2f & origin, const Vec2f & destination, const Vec2f & apex, 
+					int32_t id, float area, const Vec2f & centroid ) 
+	: mApex( apex ), mArea( area ), mCentroid( centroid ), mDestination( destination ), mId( id ), 
 	  mOrigin( origin ), mPrevCentroid( centroid )
 {
 }
 
+// Hit test triangle
+bool Triangle::contains( const Vec2f & position )
+{
+	
+	// Get area values using input position and two points from triangle
+	float area0 = calcArea( mDestination, mApex, position );
+	float area1 = calcArea( mApex, mOrigin, position );
+	float area2 = calcArea( mOrigin, mDestination, position );
+
+	// Sum the absolute values of each area
+	float areaSum = math<float>::abs( area0 ) + math<float>::abs( area1 ) + math<float>::abs( area2 );
+
+	// If sum of the three areas is the same as the triangle's 
+	// area, the point is inside
+	return areaSum == mArea;
+
+}
+
+// Hit test triangle
+bool Triangle::contains( const Vec2f & position ) const
+{
+
+	// Get area values using input position and two points from triangle
+	float area0 = calcArea( mDestination, mApex, position );
+	float area1 = calcArea( mApex, mOrigin, position );
+	float area2 = calcArea( mOrigin, mDestination, position );
+
+	// Sum the absolute values of each area
+	float areaSum = math<float>::abs( area0 ) + math<float>::abs( area1 ) + math<float>::abs( area2 );
+
+	// If sum of the three areas is the same as the triangle's 
+	// area, the point is inside
+	return areaSum == mArea;
+
+}
+
 // Point getter shortcuts
-const ci::Vec2f Triangle::a() 
+const Vec2f Triangle::a() 
 { 
 	return mOrigin; 
 }
-const ci::Vec2f Triangle::a() const 
+const Vec2f Triangle::a() const 
 { 
 	return mOrigin; 
 }
-const ci::Vec2f Triangle::b() 
+const Vec2f Triangle::b() 
 { 
 	return mDestination; 
 }
-const ci::Vec2f Triangle::b() const 
+const Vec2f Triangle::b() const 
 { 
 	return mDestination; 
 }
-const ci::Vec2f Triangle::c() 
+const Vec2f Triangle::c() 
 { 
 	return mApex; 
 }
-const ci::Vec2f Triangle::c() const 
+const Vec2f Triangle::c() const 
 { 
 	return mApex; 
 }
 
+// Update area
+void Triangle::calcArea()
+{
+	mArea = calcArea( mOrigin, mDestination, mApex );
+}
+
 // Getters
-const ci::Vec2f Triangle::getApex() 
+const Vec2f Triangle::getApex() 
 { 
 	return mApex; 
 }
-const ci::Vec2f Triangle::getApex() const 
+const Vec2f Triangle::getApex() const 
 { 
 	return mApex; 
 }
@@ -183,19 +265,19 @@ const float Triangle::getArea() const
 { 
 	return mArea; 
 }
-const ci::Vec2f Triangle::getCentroid() 
+const Vec2f Triangle::getCentroid() 
 { 
 	return mCentroid; 
 }
-const ci::Vec2f Triangle::getCentroid() const 
+const Vec2f Triangle::getCentroid() const 
 { 
 	return mCentroid; 
 }
-const ci::Vec2f Triangle::getDestination() 
+const Vec2f Triangle::getDestination() 
 { 
 	return mDestination; 
 }
-const ci::Vec2f Triangle::getDestination() const 
+const Vec2f Triangle::getDestination() const 
 { 
 	return mDestination; 
 }
@@ -207,39 +289,39 @@ const int32_t Triangle::getId() const
 { 
 	return mId; 
 }
-const ci::Vec2f Triangle::getOrigin() 
+const Vec2f Triangle::getOrigin() 
 { 
 	return mOrigin; 
 }
-const ci::Vec2f Triangle::getOrigin() const 
+const Vec2f Triangle::getOrigin() const 
 { 
 	return mOrigin; 
 }
-ci::Vec2f Triangle::getVelocity() 
+Vec2f Triangle::getVelocity() 
 { 
 	return mCentroid - mPrevCentroid; 
 }
-ci::Vec2f Triangle::getVelocity() const 
+Vec2f Triangle::getVelocity() const 
 { 
 	return mCentroid - mPrevCentroid; 
 }
 
 // Point setter shortcuts
-void Triangle::a( const ci::Vec2f & origin )
+void Triangle::a( const Vec2f & origin )
 {
 	mOrigin = origin;
 }
-void Triangle::b( const ci::Vec2f & destination )
+void Triangle::b( const Vec2f & destination )
 {
 	mDestination = destination;
 }
-void Triangle::c( const ci::Vec2f & apex )
+void Triangle::c( const Vec2f & apex )
 {
 	mApex = apex;
 }
 
 // Setters
-void Triangle::setApex( const ci::Vec2f & apex )
+void Triangle::setApex( const Vec2f & apex )
 {
 	mApex = apex;
 }
@@ -247,12 +329,12 @@ void Triangle::setArea( float area )
 {
 	mArea = area;
 }
-void Triangle::setCentroid( const ci::Vec2f & centroid ) 
+void Triangle::setCentroid( const Vec2f & centroid ) 
 { 
 	mPrevCentroid = mCentroid;
 	mCentroid = centroid;
 }
-void Triangle::setDestination( const ci::Vec2f & destination )
+void Triangle::setDestination( const Vec2f & destination )
 {
 	mDestination = destination;
 }
@@ -260,7 +342,7 @@ void Triangle::setId( int32_t id )
 {
 	mId = id;
 }
-void Triangle::setOrigin( const ci::Vec2f & origin )
+void Triangle::setOrigin( const Vec2f & origin )
 {
 	mOrigin = origin;
 }

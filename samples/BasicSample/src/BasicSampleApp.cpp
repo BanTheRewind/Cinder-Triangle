@@ -1,25 +1,72 @@
+/*
+* 
+* Copyright (c) 2012, Ban the Rewind
+* All rights reserved.
+* 
+* Redistribution and use in source and binary forms, with or 
+* without modification, are permitted provided that the following 
+* conditions are met:
+* 
+* Redistributions of source code must retain the above copyright 
+* notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright 
+* notice, this list of conditions and the following disclaimer in 
+* the documentation and/or other materials provided with the 
+* distribution.
+* 
+* Neither the name of the Ban the Rewind nor the names of its 
+* contributors may be used to endorse or promote products 
+* derived from this software without specific prior written 
+* permission.
+* 
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+* ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+* 
+*/
+
 #include "cinder/app/AppBasic.h"
 #include "cinder/gl/gl.h"
+#include "cinder/Utilities.h"
 #include "Triangle.h"
 
-// We'll create a new Cinder Application by deriving from the BasicApp class
+/*
+ * This application demonstrates how to triangulate a 
+ * vector of points and hit test the generated triangles.
+ * Draw with mouse to add points. Click on a triangle
+ * to select it.
+ */
 class BasicSampleApp : public ci::app::AppBasic 
 {
 
 public:
 
+	// Cinder callbacks
+	void draw();
 	void keyDown( ci::app::KeyEvent event );
 	void mouseDrag( ci::app::MouseEvent event );
-
-	void draw();
-
+	void mouseUp( ci::app::MouseEvent event );
 	void shutdown();
 
 private:
 
-	// This will maintain a list of points which we will draw line segments between
+	// Path created by mouse
 	std::vector<ci::Vec2f>		mPoints;
+
+	// Triangles created from points
 	std::vector<Triangle>		mTriangles;
+
+	// ID of selected triangle
+	int32_t						mSelectedId;
 
 };
 
@@ -36,11 +83,11 @@ void BasicSampleApp::draw()
 	gl::setMatricesWindow( getWindowSize() );
 	gl::clear( Colorf::black() );
 
-	// We'll set the color to an orange color
+	// Draw triangles
 	glLineWidth( 2.0f );
-	gl::color( 1.0f, 0.5f, 0.25f );
+	gl::color( 1.0f, 0.25f, 0.5f );
 	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
-		glBegin( GL_LINE_STRIP );
+		glBegin( mSelectedId == triIt->getId() ? GL_TRIANGLE_STRIP : GL_LINE_STRIP );
 		gl::vertex( triIt->a() );
 		gl::vertex( triIt->b() );
 		gl::vertex( triIt->c() );
@@ -78,6 +125,7 @@ void BasicSampleApp::keyDown( KeyEvent event )
 		setFullScreen( !isFullScreen() );
 		break;
 	case KeyEvent::KEY_SPACE:
+		mSelectedId = -1;
 		mPoints.clear();
 		mTriangles.clear();
 		break;
@@ -89,7 +137,10 @@ void BasicSampleApp::keyDown( KeyEvent event )
 void BasicSampleApp::mouseDrag( MouseEvent event )
 {
 
-	// Add a point if we've more than ten pixels or don't have a point yet
+	// Clear selected triangle ID
+	mSelectedId = -1;
+
+	// Add a point if we've moved more than ten pixels or don't have a point yet
 	if ( mPoints.size() <= 0 ||  event.getPos().distance( * mPoints.rbegin() ) > 10 ) {
 
 		// Add point to list
@@ -100,6 +151,26 @@ void BasicSampleApp::mouseDrag( MouseEvent event )
 			mTriangles = Triangle::triangulate( mPoints );
 		}
 
+	}
+
+}
+
+// Handles mouse up
+void BasicSampleApp::mouseUp( MouseEvent event )
+{
+
+	// Get position
+	Vec2f position = event.getPos();
+	
+	// Reset selected ID
+	mSelectedId = -1;
+
+	// Hit test triangles
+	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+		if ( triIt->contains( position ) ) {
+			mSelectedId = triIt->getId();
+			return;
+		}
 	}
 
 }

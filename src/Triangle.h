@@ -37,8 +37,10 @@
 #pragma once
 
 // Includes
+#include "cinder/app/AppBasic.h"
 #include "cinder/Vector.h"
 #include "triangle/del_interface.hpp"
+#include "cinder/Utilities.h"
 
 // Triangle data
 class Triangle
@@ -49,10 +51,23 @@ public:
 	// Triangulate a shape
 	static std::vector<Triangle> triangulate( const std::vector<ci::Vec2f> & points, uint32_t resolution = 0 );
 
-	//! Constructor
+	// Calculate area between three points
+	static float		calcArea( const ci::Vec2f & a, const ci::Vec2f & b, const ci::Vec2f & c );
+
+	// Calculate centroid
+	static ci::Vec2f	calcCentroid( const ci::Vec2f & a, const ci::Vec2f & b, const ci::Vec2f & c );
+
+	// Constructor
 	Triangle( const ci::Vec2f & origin = ci::Vec2f::zero(), const ci::Vec2f & destination = ci::Vec2f::zero(), 
 			  const ci::Vec2f & apex = ci::Vec2f::zero(), int32_t id = 0, float area = 0.0f, 
 			  const ci::Vec2f & centroid = ci::Vec2f::zero() );
+
+	// Hit test triangle
+	bool				contains( const ci::Vec2f & position );
+	bool				contains( const ci::Vec2f & position ) const;
+
+	// Move triangle
+	void				move( const ci::Vec2f & offset );
 
 	// Point getter shortcuts
 	const ci::Vec2f		a();
@@ -82,6 +97,9 @@ public:
 	void				a( const ci::Vec2f & origin );
 	void				b( const ci::Vec2f & destination );
 	void				c( const ci::Vec2f & apex );
+	
+	// Update area calculate for this triangle
+	void				calcArea();
 
 	// Setters
 	void				setApex( const ci::Vec2f & apex );
@@ -101,6 +119,5 @@ private:
 	ci::Vec2f			mCentroid;
 	int32_t				mId;
 	ci::Vec2f			mPrevCentroid;
-
 
 };
