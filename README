@@ -22,6 +22,13 @@ This is a work in progress.  On the to do list...
    - void scale( float scale );
    - void rotate( float degrees );
    - bool intersects( const Triangle & triangle );
+   - Vec2f calcSize();
+   - Vec2f getSize();
+   - float getHeight();
+   - float getWidth();
+   - Rectf getBounds();
+   - Rectf calcBoundingBox();
+- calc* methods should return what they are calculating
 - 3D terrain sample (2D tri + Z for height)
 - Map triangles back to source index (needed to obtain Z)
 - XCode sample projects and static lib (OSX + iOS)
