@@ -1,12 +1,14 @@
 Delaunay triangulation for Cinder. It wraps and is based on
 Jonathan Richard Shewchuk's classic "triangle.c".
 
-The triangulation result of this block is the exact same as Cinder's 
-triangulation, however the output is very different. Instead of creating 
-a TriMesh2D, Cinder-Triangle creates a vector of Triangle objects, 
-each with position and size data.
+The triangulation result of this block is the same as Cinder's 
+triangulation, however the output is very different. Instead of 
+creating a TriMesh2D, Cinder-Triangle creates a vector of 
+Triangle objects, each with several properties and methods for
+measurement and manipulation.
 
-This is especially useful in 2D physics or when breaking up an outline.
+This is especially useful in 2D physics, breaking up an outline, 
+calculating or calibrating meshes, etc.
 
 See it in use here:
 http://bantherewind.com/kinect-opencv-delaunay-triangulation-box2d
