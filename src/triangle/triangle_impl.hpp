@@ -348,7 +348,7 @@
 
 #define ONETHIRD 0.333333333333333333333333333333333333333333333333333333333333
 
-#include "triangle/dpoint.hpp"
+#include "dpoint.hpp"
 #include <iostream>
 #include <algorithm>
 
@@ -368,7 +368,7 @@
 #endif /* not cygwin */
 #endif /* LINUX */
 #ifdef TRILIBRARY
-#include "triangle/triangle.h"
+#include "triangle.h"
 #endif /* TRILIBRARY */
 
 /* A few forward declarations.                                               */

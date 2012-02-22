@@ -4,8 +4,8 @@
 		This class is a wrapper on the triangle package.
  */
 #include <iostream>
-#include "triangle/triangle_impl.hpp"
-#include "triangle/del_interface.hpp"
+#include "triangle_impl.hpp"
+#include "del_interface.hpp"
 #include <new>
 
 #define REAL double
