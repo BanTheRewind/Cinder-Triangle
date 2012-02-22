@@ -107,7 +107,7 @@ icc 9.0/9.1, gcc-4.1/3.4.6. <br>
 #ifndef DEL_INTERFACE
 #define DEL_INTERFACE
 
-#include "triangle/dpoint.hpp"
+#include "dpoint.hpp"
 #include <vector>
 #include <string>
 
