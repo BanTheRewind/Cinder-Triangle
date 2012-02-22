@@ -33,7 +33,6 @@ This is a work in progress.  On the to do list...
 - calc* methods should return what they are calculating
 - 3D terrain sample (2D tri + Z for height)
 - Map triangles back to source index (needed to obtain Z)
-- XCode sample projects and static lib (OSX + iOS)
 
 -----------------------------------------
 

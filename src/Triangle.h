@@ -39,7 +39,7 @@
 // Includes
 #include "cinder/app/AppBasic.h"
 #include "cinder/Vector.h"
-#include "triangle/del_interface.hpp"
+#include "del_interface.hpp"
 #include "cinder/Utilities.h"
 
 // Triangle data
