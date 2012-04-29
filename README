@@ -1,12 +1,14 @@
 Delaunay triangulation for Cinder. It wraps and is based on
 Jonathan Richard Shewchuk's classic "triangle.c".
 
-The triangulation result of this block is the exact same as Cinder's 
-triangulation, however the output is very different. Instead of creating 
-a TriMesh2D, Cinder-Triangle creates a vector of Triangle objects, 
-each with position and size data.
+The triangulation result of this block is the same as Cinder's 
+triangulation, however the output is very different. Instead of 
+creating a TriMesh2D, Cinder-Triangle creates a vector of 
+Triangle objects, each with several properties and methods for
+measurement and manipulation.
 
-This is especially useful in 2D physics or when breaking up an outline.
+This is especially useful in 2D physics, breaking up an outline, 
+calculating or calibrating meshes, etc.
 
 See it in use here:
 http://bantherewind.com/kinect-opencv-delaunay-triangulation-box2d
@@ -16,10 +18,21 @@ http://en.wikipedia.org/wiki/Delaunay_triangulation
 
 This is a work in progress.  On the to do list...
 
-- 3D triangulation
-- Advanced sample (same as basic, but triangles can be moved)
-- 3D terrain sample
-- XCode sample projects and static lib ( OSX + iOS )
+- New Triangle:: methods
+   - void scale( Vec2f scale );
+   - void scale( float x, float y );
+   - void scale( float scale );
+   - void rotate( float degrees );
+   - bool intersects( const Triangle & triangle );
+   - Vec2f calcSize();
+   - Vec2f getSize();
+   - float getHeight();
+   - float getWidth();
+   - Rectf getBounds();
+   - Rectf calcBoundingBox();
+- calc* methods should return what they are calculating
+- 3D terrain sample (2D tri + Z for height)
+- Map triangles back to source index (needed to obtain Z)
 
 -----------------------------------------
 
