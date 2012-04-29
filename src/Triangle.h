@@ -39,7 +39,6 @@
 // Includes
 #include "cinder/app/AppBasic.h"
 #include "cinder/Vector.h"
-#include "triangle/del_interface.hpp"
 #include "cinder/Utilities.h"
 
 // Triangle data
@@ -48,66 +47,62 @@ class Triangle
 
 public:
 
-	// Triangulate a shape
-	static std::vector<Triangle> triangulate( const std::vector<ci::Vec2f> & points, uint32_t resolution = 0 );
-
 	// Calculate area between three points
-	static float		calcArea( const ci::Vec2f & a, const ci::Vec2f & b, const ci::Vec2f & c );
+	static float		calcArea( const ci::Vec2f &a, const ci::Vec2f &b, const ci::Vec2f &c );
 
 	// Calculate centroid
-	static ci::Vec2f	calcCentroid( const ci::Vec2f & a, const ci::Vec2f & b, const ci::Vec2f & c );
+	static ci::Vec2f	calcCentroid( const ci::Vec2f &a, const ci::Vec2f &b, const ci::Vec2f &c );
 
 	// Constructor
-	Triangle( const ci::Vec2f & origin = ci::Vec2f::zero(), const ci::Vec2f & destination = ci::Vec2f::zero(), 
-			  const ci::Vec2f & apex = ci::Vec2f::zero(), int32_t id = 0, float area = 0.0f, 
-			  const ci::Vec2f & centroid = ci::Vec2f::zero() );
+	Triangle( const ci::Vec2f &origin = ci::Vec2f::zero(), const ci::Vec2f &destination = ci::Vec2f::zero(), 
+			  const ci::Vec2f &apex = ci::Vec2f::zero(), int32_t id = 0 );
 
 	// Hit test triangle
-	bool				contains( const ci::Vec2f & position );
-	bool				contains( const ci::Vec2f & position ) const;
+	bool				contains( const ci::Vec2f &position );
+	bool				contains( const ci::Vec2f &position ) const;
 
 	// Move triangle
-	void				move( const ci::Vec2f & offset );
+	void				move( const ci::Vec2f &offset );
 
 	// Point getter shortcuts
-	const ci::Vec2f		a();
-	const ci::Vec2f		a() const;
-	const ci::Vec2f		b();
-	const ci::Vec2f		b() const;
-	const ci::Vec2f		c();
-	const ci::Vec2f		c() const;
+	ci::Vec2f&			a();
+	const ci::Vec2f&	a() const;
+	ci::Vec2f&			b();
+	const ci::Vec2f&	b() const;
+	ci::Vec2f&			c();
+	const ci::Vec2f&	c() const;
 
 	// Getters
-	const ci::Vec2f		getApex();
-	const ci::Vec2f		getApex() const;
-	const float			getArea();
-	const float			getArea() const;
-	const ci::Vec2f		getCentroid();
-	const ci::Vec2f		getCentroid() const;
-	const ci::Vec2f		getDestination();
-	const ci::Vec2f		getDestination() const;
-	const int32_t		getId();
-	const int32_t		getId() const;
-	const ci::Vec2f		getOrigin();
-	const ci::Vec2f		getOrigin() const;
+	ci::Vec2f&			getApex();
+	const ci::Vec2f&	getApex() const;
+	float				getArea();
+	float				getArea() const;
+	ci::Vec2f&			getCentroid();
+	const ci::Vec2f&	getCentroid() const;
+	ci::Vec2f&			getDestination();
+	const ci::Vec2f&	getDestination() const;
+	int32_t				getId();
+	int32_t				getId() const;
+	ci::Vec2f&			getOrigin();
+	const ci::Vec2f&	getOrigin() const;
 	ci::Vec2f			getVelocity();
-	ci::Vec2f			getVelocity() const;
+	const ci::Vec2f		getVelocity() const;
 
 	// Point setter shortcuts
-	void				a( const ci::Vec2f & origin );
-	void				b( const ci::Vec2f & destination );
-	void				c( const ci::Vec2f & apex );
+	void				a( const ci::Vec2f &origin );
+	void				b( const ci::Vec2f &destination );
+	void				c( const ci::Vec2f &apex );
 	
-	// Update area calculate for this triangle
-	void				calcArea();
+	// Update area for this triangle
+	float				calcArea();
 
 	// Setters
-	void				setApex( const ci::Vec2f & apex );
+	void				setApex( const ci::Vec2f &apex );
 	void				setArea( float area );
-	void				setDestination( const ci::Vec2f & destination );
+	void				setDestination( const ci::Vec2f &destination );
 	void				setId( int32_t id );
-	void				setOrigin( const ci::Vec2f & origin );
-	void				setPosition( const ci::Vec2f & position );
+	void				setOrigin( const ci::Vec2f &origin );
+	void				setPosition( const ci::Vec2f &position );
 
 private:
 
@@ -120,6 +115,11 @@ private:
 	int32_t				mId;
 	ci::Vec2f			mPrevCentroid;
 
-	void				setCentroid( const ci::Vec2f & centroid );
+	void				setCentroid( const ci::Vec2f &centroid );
 
 };
+
+namespace cinder { namespace gl {
+void					drawSolidTriangle( const Triangle &triangle, bool textureTriangle = false );
+void					drawStrokedTriangle( const Triangle &triangle );
+} }

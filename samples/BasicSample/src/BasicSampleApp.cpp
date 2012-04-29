@@ -36,11 +36,13 @@
 
 #include "cinder/app/AppBasic.h"
 #include "cinder/gl/gl.h"
+#include "cinder/Triangulate.h"
+#include "cinder/TriMesh.h"
 #include "Triangle.h"
 
 /*
  * This application demonstrates how to triangulate a 
- * vector of points and hit test the generated triangles.
+ * Path2d and hit test the generated triangles.
  * Draw with mouse to add points. Click on a triangle
  * to select it.
  */
@@ -54,15 +56,17 @@ public:
 	void keyDown( ci::app::KeyEvent event );
 	void mouseDrag( ci::app::MouseEvent event );
 	void mouseUp( ci::app::MouseEvent event );
+	void setup();
 	void shutdown();
 
 private:
 
 	// Path created by mouse
-	std::vector<ci::Vec2f>		mPoints;
+	ci::Path2d					mLine;
 
-	// Triangles created from points
+	// Triangles created from path
 	std::vector<Triangle>		mTriangles;
+	void						triangulate();
 
 	// ID of selected triangle
 	int32_t						mSelectedId;
@@ -86,22 +90,18 @@ void BasicSampleApp::draw()
 	glLineWidth( 2.0f );
 	gl::color( 1.0f, 0.25f, 0.5f );
 	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
-		glBegin( mSelectedId == triIt->getId() ? GL_TRIANGLE_STRIP : GL_LINE_STRIP );
-		gl::vertex( triIt->a() );
-		gl::vertex( triIt->b() );
-		gl::vertex( triIt->c() );
-		glEnd();
+		if ( mSelectedId == triIt->getId() ) {
+			gl::drawSolidTriangle( *triIt );
+		} else {
+			gl::drawStrokedTriangle( *triIt );
+		}
 		gl::drawSolidCircle( triIt->getCentroid(), 1.0f, 12 );
 	}
 
 	// Draw outline
 	glLineWidth( 0.5f );
 	gl::color( Colorf::white() );
-	glBegin( GL_LINE_STRIP );
-	for ( vector<Vec2f>::const_iterator pointIt = mPoints.begin(); pointIt != mPoints.end(); ++pointIt ) {
-		gl::vertex( * pointIt );
-	}
-	glEnd();
+	gl::draw( mLine );
 
 	// Write instructions
 	gl::drawString( "Drag mouse to draw", Vec2f( 20.0f, getWindowHeight() - 68.0f ) );
@@ -125,7 +125,7 @@ void BasicSampleApp::keyDown( KeyEvent event )
 		break;
 	case KeyEvent::KEY_SPACE:
 		mSelectedId = -1;
-		mPoints.clear();
+		mLine = Path2d();
 		mTriangles.clear();
 		break;
 	}
@@ -140,14 +140,18 @@ void BasicSampleApp::mouseDrag( MouseEvent event )
 	mSelectedId = -1;
 
 	// Add a point if we've moved more than ten pixels or don't have a point yet
-	if ( mPoints.size() <= 0 ||  event.getPos().distance( * mPoints.rbegin() ) > 10 ) {
+	uint32_t numPoints = mLine.getNumPoints();
+	if ( numPoints == 0 ||  event.getPos().distance( mLine.getCurrentPoint() ) > 10 ) {
 
 		// Add point to list
-		mPoints.push_back( event.getPos() );
+		if ( numPoints == 0 ) {
+			mLine.moveTo( event.getPos() );
+		}
+		mLine.lineTo( event.getPos() );
 	
 		// Start triangulating when we have at least three points
-		if ( mPoints.size() >= 3 ) {
-			mTriangles = Triangle::triangulate( mPoints );
+		if ( numPoints >= 3 ) {
+			triangulate();
 		}
 
 	}
@@ -174,13 +178,38 @@ void BasicSampleApp::mouseUp( MouseEvent event )
 
 }
 
+// Set up
+void BasicSampleApp::setup()
+{
+
+	// IniBasicSampleApptialize selected ID
+	mSelectedId = -1;
+
+}
+
 // Called on exit
-void BasicSampleApp::shutdown()
+void mLine = Path2d();::shutdown()
 {
 
 	// Clear lists
-	mPoints.clear();
 	mTriangles.clear();
+
+}
+
+void BasicSampleApp::triangulate()
+{
+
+	// Triangulate line
+	TriMesh2d mesh = Triangulator( mLine ).calcMesh();
+
+	// Rebuild list of triangles from mesh
+	mTriangles.clear();
+	Vec2f a, b, c;
+	for ( uint32_t i = 0; i < mesh.getNumTriangles(); i++ ) {
+		mesh.getTriangleVertices( i, &a, &b, &c );
+		Triangle triangle( c, b, a, i );
+		mTriangles.push_back( triangle );
+	}
 
 }
 
