@@ -1,42 +1,21 @@
-Delaunay triangulation for Cinder. It wraps and is based on
-Jonathan Richard Shewchuk's classic "triangle.c".
-
-The triangulation result of this block is the same as Cinder's 
-triangulation, however the output is very different. Instead of 
-creating a TriMesh2D, Cinder-Triangle creates a vector of 
-Triangle objects, each with several properties and methods for
-measurement and manipulation.
-
-This is especially useful in 2D physics, breaking up an outline, 
-calculating or calibrating meshes, etc.
+Triangle class for Cinder.  This is to measure and manipulate 
+triangles.  Think of it as an analog to the Rectangle class.
 
 See it in use here:
 http://bantherewind.com/kinect-opencv-delaunay-triangulation-box2d
 
-More info here:
-http://en.wikipedia.org/wiki/Delaunay_triangulation
-
 This is a work in progress.  On the to do list...
 
 - New Triangle:: methods
-   - void scale( Vec2f scale );
-   - void scale( float x, float y );
-   - void scale( float scale );
-   - void rotate( float degrees );
-   - bool intersects( const Triangle & triangle );
-   - Vec2f calcSize();
-   - Vec2f getSize();
-   - float getHeight();
-   - float getWidth();
-   - Rectf getBounds();
-   - Rectf calcBoundingBox();
-- calc* methods should return what they are calculating
+   - Triangle transformCopy( const MatrixAffine2f &matrix );
+
+- Add math to advanced sample
 - 3D terrain sample (2D tri + Z for height)
 - Map triangles back to source index (needed to obtain Z)
 
 -----------------------------------------
 
-Version 0.0.1
+Version 0.0.2
 
 -----------------------------------------
 

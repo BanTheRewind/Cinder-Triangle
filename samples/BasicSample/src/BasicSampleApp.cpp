@@ -52,24 +52,24 @@ class BasicSampleApp : public ci::app::AppBasic
 public:
 
 	// Cinder callbacks
-	void draw();
-	void keyDown( ci::app::KeyEvent event );
-	void mouseDrag( ci::app::MouseEvent event );
-	void mouseUp( ci::app::MouseEvent event );
-	void setup();
-	void shutdown();
+	void							draw();
+	void							keyDown( ci::app::KeyEvent event );
+	void							mouseDrag( ci::app::MouseEvent event );
+	void							mouseUp( ci::app::MouseEvent event );
+	void							setup();
+	void							shutdown();
 
 private:
 
 	// Path created by mouse
-	ci::Path2d					mLine;
+	ci::Path2d						mLine;
 
 	// Triangles created from path
-	std::vector<Triangle>		mTriangles;
-	void						triangulate();
+	std::map<uint32_t, Triangle>	mTriangles;
+	void							triangulate();
 
 	// ID of selected triangle
-	int32_t						mSelectedId;
+	int32_t							mSelectedId;
 
 };
 
@@ -89,13 +89,13 @@ void BasicSampleApp::draw()
 	// Draw triangles
 	glLineWidth( 2.0f );
 	gl::color( 1.0f, 0.25f, 0.5f );
-	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
-		if ( mSelectedId == triIt->getId() ) {
-			gl::drawSolidTriangle( *triIt );
+	for ( map<uint32_t, Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+		if ( mSelectedId == triIt->first ) {
+			gl::drawSolidTriangle( triIt->second );
 		} else {
-			gl::drawStrokedTriangle( *triIt );
+			gl::drawStrokedTriangle( triIt->second );
 		}
-		gl::drawSolidCircle( triIt->getCentroid(), 1.0f, 12 );
+		gl::drawSolidCircle( triIt->second.getCentroid(), 1.0f, 12 );
 	}
 
 	// Draw outline
@@ -169,9 +169,9 @@ void BasicSampleApp::mouseUp( MouseEvent event )
 	mSelectedId = -1;
 
 	// Hit test triangles
-	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
-		if ( triIt->contains( position ) ) {
-			mSelectedId = triIt->getId();
+	for ( map<uint32_t, Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+		if ( triIt->second.contains( position ) ) {
+			mSelectedId = triIt->first;
 			return;
 		}
 	}
@@ -188,7 +188,7 @@ void BasicSampleApp::setup()
 }
 
 // Called on exit
-void mLine = Path2d();::shutdown()
+void BasicSampleApp::shutdown()
 {
 
 	// Clear lists
@@ -207,8 +207,8 @@ void BasicSampleApp::triangulate()
 	Vec2f a, b, c;
 	for ( uint32_t i = 0; i < mesh.getNumTriangles(); i++ ) {
 		mesh.getTriangleVertices( i, &a, &b, &c );
-		Triangle triangle( c, b, a, i );
-		mTriangles.push_back( triangle );
+		Triangle triangle( c, b, a );
+		mTriangles[ i ] = triangle;
 	}
 
 }

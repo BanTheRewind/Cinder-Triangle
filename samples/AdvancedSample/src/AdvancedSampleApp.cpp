@@ -52,26 +52,37 @@ class AdvancedSampleApp : public ci::app::AppBasic
 public:
 
 	// Cinder callbacks
-	void					draw();
-	void					keyDown( ci::app::KeyEvent event );
-	void					mouseDown( ci::app::MouseEvent event );
-	void					mouseDrag( ci::app::MouseEvent event );
-	void					mouseUp( ci::app::MouseEvent event );
-	void					setup();
-	void					shutdown();
+	void							draw();
+	void							keyDown( ci::app::KeyEvent event );
+	void							mouseDown( ci::app::MouseEvent event );
+	void							mouseDrag( ci::app::MouseEvent event );
+	void							mouseUp( ci::app::MouseEvent event );
+	void							setup();
+	void							shutdown();
 
 private:
 
 	// Path created by mouse
-	ci::Path2d				mLine;
+	ci::Path2d						mLine;
+
+	struct VelocityTriangle
+	{
+		VelocityTriangle( uint32_t id, const Triangle &triangle )
+			: mId( id ), mTriangle( triangle ), mVelocity( ci::Vec2f::zero() )
+		{
+		}
+		uint32_t					mId;
+		Triangle					mTriangle;
+		ci::Vec2f					mVelocity;
+	};
 
 	// Triangles created from path
-	std::vector<Triangle>	mTriangles;
-	void					triangulate();
+	std::vector<VelocityTriangle>	mTriangles;
+	void							triangulate();
 
 	// ID of selected triangle
-	ci::Vec2f				mMouse;
-	int32_t					mSelectedId;
+	ci::Vec2f						mMouse;
+	int32_t							mSelectedId;
 
 };
 
@@ -88,29 +99,33 @@ void AdvancedSampleApp::draw()
 	gl::setMatricesWindow( getWindowSize() );
 	gl::clear( Colorf::black() );
 
-	// Set line width
-	glLineWidth( 2.0f );
-	
 	// Iterate through triangles
-	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+	for ( vector<VelocityTriangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
 
 		// Draw triangle and centroid
 		gl::color( 1.0f, 0.25f, 0.5f );
-		if ( mSelectedId == triIt->getId() ) {
-			gl::drawSolidTriangle( *triIt );
+		glLineWidth( 2.0f );
+		if ( mSelectedId == triIt->mId ) {
+			gl::drawSolidTriangle( triIt->mTriangle );
 		} else {
-			gl::drawStrokedTriangle( *triIt );
+			gl::drawStrokedTriangle( triIt->mTriangle );
 		}
-		gl::drawSolidCircle( triIt->getCentroid(), 1.0f, 12 );
+		gl::drawSolidCircle( triIt->mTriangle.getCentroid(), 1.0f, 12 );
 
 		// Draw velocity
 		gl::color( Colorf::white() );
 		glBegin( GL_LINE_STRIP );
 		{
-			gl::vertex( triIt->getCentroid() );
-			gl::vertex( triIt->getCentroid() - triIt->getVelocity() );
+			gl::vertex( triIt->mTriangle.getCentroid() );
+			gl::vertex( triIt->mTriangle.getCentroid() - triIt->mVelocity );
 		}
 		glEnd();
+
+		// Draw bounding box of selected triangle
+		if ( mSelectedId == triIt->mId ) {
+			glLineWidth( 0.5f );
+			gl::drawStrokedRect( triIt->mTriangle.getBounds() );
+		}
 
 	}
 
@@ -157,9 +172,9 @@ void AdvancedSampleApp::mouseDown( MouseEvent event )
 	mMouse = event.getPos();
 
 	// Hit test triangles
-	for ( vector<Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
-		if ( triIt->contains( mMouse ) ) {
-			mSelectedId = triIt->getId();
+	for ( vector<VelocityTriangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+		if ( triIt->mTriangle.contains( mMouse ) ) {
+			mSelectedId = triIt->mId;
 			return;
 		}
 	}
@@ -173,9 +188,12 @@ void AdvancedSampleApp::mouseDrag( MouseEvent event )
 	// Update mouse position
 	mMouse = event.getPos();
 
-	// Do not append points while dragging
+	// Calculate velocity of selected triangle
 	if ( mSelectedId >= 0 ) {
-		mTriangles[ mSelectedId ].setPosition( mMouse );
+		VelocityTriangle& triangle = mTriangles[ mSelectedId ];
+		Vec2f position = triangle.mTriangle.getCentroid();
+		triangle.mTriangle.offsetCenterTo( mMouse );
+		triangle.mVelocity = mMouse - position;
 		return;
 	}
 
@@ -236,8 +254,9 @@ void AdvancedSampleApp::triangulate()
 	Vec2f a, b, c;
 	for ( uint32_t i = 0; i < mesh.getNumTriangles(); i++ ) {
 		mesh.getTriangleVertices( i, &a, &b, &c );
-		Triangle triangle( c, b, a, i );
-		mTriangles.push_back( triangle );
+		Triangle triangle( c, b, a );
+		VelocityTriangle velTriangle( i, triangle );
+		mTriangles.push_back( velTriangle );
 	}
 
 }

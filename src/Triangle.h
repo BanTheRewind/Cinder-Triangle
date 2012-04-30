@@ -36,90 +36,172 @@
 
 #pragma once
 
-// Includes
-#include "cinder/app/AppBasic.h"
-#include "cinder/Vector.h"
-#include "cinder/Utilities.h"
+#include "cinder/Rect.h"
 
-// Triangle data
-class Triangle
+template<typename T> class MatrixAffine2;
+
+template<typename T>
+class TriangleT
 {
 
 public:
 
-	// Calculate area between three points
-	static float		calcArea( const ci::Vec2f &a, const ci::Vec2f &b, const ci::Vec2f &c );
+	// Constructors
+	TriangleT( const ci::Vec2<T> &origin = ci::Vec2<T>::zero(), const ci::Vec2<T> &destination = ci::Vec2<T>::zero(), 
+			  const ci::Vec2<T> &apex = ci::Vec2<T>::zero() );
+	static TriangleT<T>	one();
+	static TriangleT<T>	zero();
 
-	// Calculate centroid
-	static ci::Vec2f	calcCentroid( const ci::Vec2f &a, const ci::Vec2f &b, const ci::Vec2f &c );
+	///////////////////////////////////////////////////////////////////////////////
 
-	// Constructor
-	Triangle( const ci::Vec2f &origin = ci::Vec2f::zero(), const ci::Vec2f &destination = ci::Vec2f::zero(), 
-			  const ci::Vec2f &apex = ci::Vec2f::zero(), int32_t id = 0 );
-
-	// Hit test triangle
-	bool				contains( const ci::Vec2f &position );
-	bool				contains( const ci::Vec2f &position ) const;
-
-	// Move triangle
-	void				move( const ci::Vec2f &offset );
-
-	// Point getter shortcuts
-	ci::Vec2f&			a();
-	const ci::Vec2f&	a() const;
-	ci::Vec2f&			b();
-	const ci::Vec2f&	b() const;
-	ci::Vec2f&			c();
-	const ci::Vec2f&	c() const;
-
-	// Getters
-	ci::Vec2f&			getApex();
-	const ci::Vec2f&	getApex() const;
-	float				getArea();
-	float				getArea() const;
-	ci::Vec2f&			getCentroid();
-	const ci::Vec2f&	getCentroid() const;
-	ci::Vec2f&			getDestination();
-	const ci::Vec2f&	getDestination() const;
-	int32_t				getId();
-	int32_t				getId() const;
-	ci::Vec2f&			getOrigin();
-	const ci::Vec2f&	getOrigin() const;
-	ci::Vec2f			getVelocity();
-	const ci::Vec2f		getVelocity() const;
-
-	// Point setter shortcuts
-	void				a( const ci::Vec2f &origin );
-	void				b( const ci::Vec2f &destination );
-	void				c( const ci::Vec2f &apex );
+	// Math operators
+	TriangleT<T>		operator+( const ci::Vec2<T> &rhs );
+	TriangleT<T>		operator+( const TriangleT<T> &rhs );
+	void				operator+=( const ci::Vec2<T> &rhs );
+	void				operator+=( const TriangleT<T> &rhs );
 	
-	// Update area for this triangle
-	float				calcArea();
+	TriangleT<T>		operator-( const ci::Vec2<T> &rhs );
+	TriangleT<T>		operator-( const TriangleT<T> &rhs );
+	void				operator-=( const ci::Vec2<T> &rhs );
+	void				operator-=( const TriangleT<T> &rhs );
+	
+	TriangleT<T>		operator*( const T &rhs );
+	TriangleT<T>		operator*( const ci::Vec2<T> &rhs );
+	TriangleT<T>		operator*( const TriangleT<T> &rhs );
+	void				operator*=( const T &rhs );
+	void				operator*=( const ci::Vec2<T> &rhs );
+	void				operator*=( const TriangleT<T> &rhs );
+	
+	TriangleT<T>		operator/( const T &rhs );
+	TriangleT<T>		operator/( const ci::Vec2<T> &rhs );
+	TriangleT<T>		operator/( const TriangleT<T> &rhs );
+	void				operator/=( const T &rhs );
+	void				operator/=( const ci::Vec2<T> &rhs );
+	void				operator/=( const TriangleT<T> &rhs );
 
-	// Setters
-	void				setApex( const ci::Vec2f &apex );
-	void				setArea( float area );
-	void				setDestination( const ci::Vec2f &destination );
-	void				setId( int32_t id );
-	void				setOrigin( const ci::Vec2f &origin );
-	void				setPosition( const ci::Vec2f &position );
+	// Comparison operators
+	bool				operator==( const TriangleT<T> &rhs );
+	bool				operator!=( const TriangleT<T> &rhs );
 
-private:
+	///////////////////////////////////////////////////////////////////////////////
 
-	ci::Vec2f			mApex;			// C
-	ci::Vec2f			mDestination;	// B
-	ci::Vec2f			mOrigin;		// A
+	// Point getting shortcuts 
+	ci::Vec2<T>&		a();
+	const ci::Vec2<T>&	a() const;
+	ci::Vec2<T>&		b();
+	const ci::Vec2<T>&	b() const;
+	ci::Vec2<T>&		c();
+	const ci::Vec2<T>&	c() const;
 
-	float				mArea;
-	ci::Vec2f			mCentroid;
-	int32_t				mId;
-	ci::Vec2f			mPrevCentroid;
+	///////////////////////////////////////////////////////////////////////////////
 
-	void				setCentroid( const ci::Vec2f &centroid );
+	// Measurement
+	T					distance( const ci::Vec2<T> &point );
+	T					distance( const ci::Vec2<T> &point ) const;
+	T					distanceSquared( const ci::Vec2<T> &point );
+	T					distanceSquared( const ci::Vec2<T> &point ) const;
+	ci::Vec2<T>&		getApex();
+	const ci::Vec2<T>&	getApex() const;
+	T					getArea();
+	T					getArea() const;
+	ci::Rect<T>			getBounds();
+	const ci::Rect<T>&	getBounds() const;
+	ci::Vec2<T>&		getCentroid();
+	const ci::Vec2<T>&	getCentroid() const;
+	ci::Vec2<T>&		getDestination();
+	const ci::Vec2<T>&	getDestination() const;
+	T					getHeight();
+	T					getHeight() const;
+	ci::Vec2<T>&		getOrigin();
+	const ci::Vec2<T>&	getOrigin() const;
+	ci::Vec2<T>			getSize();
+	const ci::Vec2<T>	getSize() const;
+	T					getWidth();
+	T					getWidth() const;
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	// Collision
+	ci::Vec2<T>			closestPoint( const ci::Vec2<T> &point );
+	ci::Vec2<T>			closestPoint( const ci::Vec2<T> &point ) const;
+	bool				contains( const ci::Vec2<T> &point );
+	bool				contains( const ci::Vec2<T> &point ) const;
+	bool				intersects( const TriangleT<T> &triangle );
+	bool				intersects( const TriangleT<T> &triangle ) const;
+	ci::Vec2<T>			intersection( const ci::Vec2<T> &point );
+	ci::Vec2<T>			intersection( const ci::Vec2<T> &point ) const;
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	// Point setting shortcuts
+	void				a( const ci::Vec2<T> &origin );
+	void				b( const ci::Vec2<T> &destination );
+	void				c( const ci::Vec2<T> &apex );
+	
+	///////////////////////////////////////////////////////////////////////////////
+
+	// Transformation
+	void				include( const ci::Vec2<T> &point );
+	void				include( const std::vector<ci::Vec2<T> > &points );
+	void				include( const TriangleT &triangle );
+	void				inflate( const ci::Vec2<T> &scale );
+	TriangleT<T>		inflated( const ci::Vec2<T> &scale );
+	void				offset( const ci::Vec2<T> &position );
+	void				offsetCenterTo( const ci::Vec2<T> &offset );
+	void				rotate( T radians );
+	void				rotated( T radians );
+	void				scale( T scale );
+	TriangleT<T>		scaled( T scale );
+	void				scaleCentered( T scale );
+	TriangleT<T>		scaledCentered( T scale );
+	void				set( const ci::Vec2<T> &origin, const ci::Vec2<T> &destination, const ci::Vec2<T> &apex );
+	void				setApex( const ci::Vec2<T> &apex );
+	void				setDestination( const ci::Vec2<T> &destination );
+	void				setOrigin( const ci::Vec2<T> &origin );
+	TriangleT<T>		transformCopy( const class MatrixAffine2<T> &matrix ) const;
+
+	///////////////////////////////////////////////////////////////////////////////
+
+protected:
+
+	static T			calcAngle( const ci::Vec2<T> &a, const ci::Vec2<T> &b );
+	static T			calcArea( const TriangleT<T> &triangle );
+	static T			calcArea( const ci::Vec2<T> &a, const ci::Vec2<T> &b, const ci::Vec2<T> &c );
+	static ci::Rect<T>	calcBoundingBox( const TriangleT<T> &triangle );
+	static ci::Vec2<T>	calcCentroid( const TriangleT<T> &triangle );
+	static ci::Vec2<T>	calcPoint( const ci::Vec2<T> &origin, T distance, T radians );
+	static ci::Vec2<T>	closestPoint( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
+	static bool			contains( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
+	static T			distance( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
+	static T			distanceSquared( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
+	static TriangleT<T>	getCentered( const TriangleT<T> &triangle );
+	static ci::Vec2<T>	intersection( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
+	static bool			intersects( const TriangleT<T> &a, const Triangle &b );
+
+	ci::Vec2<T>			mApex;			// C
+	ci::Vec2<T>			mDestination;	// B
+	ci::Vec2<T>			mOrigin;		// A
+
+	T					mArea;
+	ci::Rect<T>			mBounds;
+	ci::Vec2<T>			mCentroid;
+
+	void				update();
+
+	void				setCentroid( const ci::Vec2<T> &centroid );
+
+	friend				std::ostream& operator<<( std::ostream &out, const TriangleT<T> &triangle );
 
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+typedef TriangleT<float>	Trianglef;
+typedef TriangleT<double>	Triangled;
+
 namespace cinder { namespace gl {
-void					drawSolidTriangle( const Triangle &triangle, bool textureTriangle = false );
-void					drawStrokedTriangle( const Triangle &triangle );
+template<typename T>
+void					drawSolidTriangle( const TriangleT<T> &triangle, bool textureTriangle = false );
+template<typename T>
+void					drawStrokedTriangle( const TriangleT<T> &triangle );
 } }
