@@ -6,12 +6,11 @@ http://bantherewind.com/kinect-opencv-delaunay-triangulation-box2d
 
 This is a work in progress.  On the to do list...
 
-- New Triangle:: methods
-   - Triangle transformCopy( const MatrixAffine2f &matrix );
-
 - Add math to advanced sample
 - 3D terrain sample (2D tri + Z for height)
-- Map triangles back to source index (needed to obtain Z)
+   - Map triangles back to source index (needed to obtain Z)
+- Voronoi sample
+- Sierpinski sample
 
 -----------------------------------------
 

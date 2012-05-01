@@ -37,7 +37,6 @@
 #include "Triangle.h"
 
 #include "cinder/MatrixAffine2.h"
-#include "cinder/Ray.h"
 
 using namespace ci;
 using namespace std;
@@ -48,7 +47,6 @@ template<typename T>
 TriangleT<T>::TriangleT( const Vec2<T> &origin, const Vec2<T> &destination, const Vec2<T> &apex ) 
 	: mApex( apex ), mDestination( destination ), mOrigin( origin )
 {
-	update();
 }
 
 template<typename T>
@@ -95,7 +93,6 @@ void TriangleT<T>::operator+=( const ci::Vec2<T> &rhs )
 	mApex += rhs;
 	mDestination += rhs;
 	mOrigin += rhs;
-	update();
 }
 
 template<typename T>
@@ -104,7 +101,6 @@ void TriangleT<T>::operator+=( const TriangleT<T> &rhs )
 	mApex += rhs.mApex;
 	mDestination += rhs.mDestination;
 	mOrigin += rhs.mOrigin;
-	update();
 }
 
 template<typename T>
@@ -129,7 +125,6 @@ void TriangleT<T>::operator-=( const ci::Vec2<T> &rhs )
 	mApex -= rhs;
 	mDestination -= rhs;
 	mOrigin -= rhs;
-	update();
 }
 
 template<typename T>
@@ -138,7 +133,6 @@ void TriangleT<T>::operator-=( const TriangleT<T> &rhs )
 	mApex -= rhs.mApex;
 	mDestination -= rhs.mDestination;
 	mOrigin -= rhs.mOrigin;
-	update();
 }
 
 template<typename T>
@@ -171,7 +165,6 @@ void TriangleT<T>::operator*=( const T &rhs )
 	mApex *= rhs;
 	mDestination *= rhs;
 	mOrigin *= rhs;
-	update();
 }
 
 template<typename T>
@@ -180,7 +173,6 @@ void TriangleT<T>::operator*=( const ci::Vec2<T> &rhs )
 	mApex *= rhs;
 	mDestination *= rhs;
 	mOrigin *= rhs;
-	update();
 }
 
 template<typename T> 
@@ -189,7 +181,6 @@ void TriangleT<T>::operator*=( const TriangleT<T> &rhs )
 	mApex *= rhs.mApex;
 	mDestination *= rhs.mDestination;
 	mOrigin *= rhs.mOrigin;
-	update();
 }
 
 template<typename T>
@@ -222,7 +213,6 @@ void TriangleT<T>::operator/=( const T &rhs )
 	mApex /= rhs;
 	mDestination /= rhs;
 	mOrigin /= rhs;
-	update();
 }
 
 template<typename T>
@@ -231,7 +221,6 @@ void TriangleT<T>::operator/=( const ci::Vec2<T> &rhs )
 	mApex /= rhs;
 	mDestination /= rhs;
 	mOrigin /= rhs;
-	update();
 }
 
 template<typename T>
@@ -240,7 +229,6 @@ void TriangleT<T>::operator/=( const TriangleT<T> &rhs )
 	mApex /= rhs.mApex;
 	mDestination /= rhs.mDestination;
 	mOrigin /= rhs.mOrigin;
-	update();
 }
 
 template<typename T>
@@ -324,7 +312,7 @@ Vec2<T> TriangleT<T>::calcPoint( const ci::Vec2<T> &origin, T distance, T radian
 }
 
 template<typename T> 
-Vec2<T> TriangleT<T>::closestPoint( const TriangleT<T> &triangle, const ci::Vec2<T> &p )
+Vec2<T> TriangleT<T>::closestPoint( const TriangleT<T> &triangle, const ci::Vec2<T> &p, int32_t n )
 {
 	Vec2<T> a = triangle.mOrigin;
 	Vec2<T> b = triangle.mDestination;
@@ -332,15 +320,16 @@ Vec2<T> TriangleT<T>::closestPoint( const TriangleT<T> &triangle, const ci::Vec2
 	T distA = p.distanceSquared( a );
 	T distB = p.distanceSquared( b );
 	T distC = p.distanceSquared( c );
-	T dist = math<T>::min( distA, distB );
-	dist = math<T>::min( dist, distC );
-	if ( dist == distA ) {
-		return a;
-	} else if ( dist == distB ) {
-		return b;
-	} else {
-		return c;
-	}
+
+	vector<PointSort> points;
+	points.push_back( PointSort( a, distA ) );
+	points.push_back( PointSort( b, distB ) );
+	points.push_back( PointSort( c, distC ) );
+	sort( points.begin(), points.end() );
+
+	uint32_t index = math<int32_t>::clamp( n, 0, 2 );
+	return points[ index ].mPoint;
+
 }
 
 template<typename T> 
@@ -368,17 +357,11 @@ bool TriangleT<T>::contains( const TriangleT<T> &triangle, const ci::Vec2<T> &p 
 template<typename T> 
 T TriangleT<T>::distance( const TriangleT<T> &triangle, const ci::Vec2<T> &p )
 {
-	Vec2<T> a = triangle.mOrigin;
-	Vec2<T> b = triangle.mDestination;
-	Vec2<T> c = triangle.mApex;
-	Vec2<T> d = p - triangle.mCentroid;
-	Ray ray( Vec3f( (float)p.x, (float)p.y, 0.0f ), Vec3f( (float)d.x, (float)d.y, 0.0f ) );
-	Vec3f vert0( (float)c.x, (float)c.y, 0.0f );
-	Vec3f vert1( (float)b.x, (float)b.y, 0.0f );
-	Vec3f vert2( (float)a.x, (float)a.y, 0.0f );
-	float distance;
-	ray.calcTriangleIntersection( vert0, vert1, vert2, &distance );
-	return -(T)distance;
+	ci::Vec2<T> i;
+	if ( intersection( triangle, p, &i ) ) {
+		return p.distance( i );
+	}
+	return numeric_limits<T>::max();
 }
 
 template<typename T> 
@@ -391,19 +374,36 @@ T TriangleT<T>::distanceSquared( const TriangleT<T> &triangle, const ci::Vec2<T>
 template<typename T> 
 TriangleT<T> TriangleT<T>::getCentered( const TriangleT<T> &triangle )
 {
-	TriangleT<T> centered( triangle.mOrigin- triangle.mCentroid, 
-		triangle.mDestination - triangle.mCentroid, 
-		triangle.mApex - triangle.mCentroid );
+	Vec2<T> centroid = triangle.calcCentroid();
+	TriangleT<T> centered( triangle.mOrigin- centroid, 
+		triangle.mDestination - centroid, 
+		triangle.mApex - centroid );
 	return centered;
 }
 
 template<typename T> 
-Vec2<T> TriangleT<T>::intersection( const TriangleT<T> &triangle, const Vec2<T> &p )
+bool TriangleT<T>::intersection( const TriangleT<T> &triangle, const Vec2<T> &p, Vec2<T> *intersection )
 {
-	T dist = distance( triangle, p );
-	T angle = calcAngle( p, triangle.mCentroid );
-	Vec2<T> point = calcPoint( p, dist, angle );
-	return point;
+	Vec2<T> point = Vec2<T>::zero();
+	Vec2<T> a1 = p;
+	Vec2<T> b1 = triangle.calcCentroid();
+	Vec2<T> a2 = closestPoint( triangle, p );
+	Vec2<T> b2 = closestPoint( triangle, p, 1 );
+	T y1 = b1.y - a1.y;
+	T x1 = b1.x - a1.x;
+	T y2 = b2.y - a2.y;
+	T x2 = b2.x - a2.x;
+	T dist = y2 * x1 - y1 * x2;
+	if ( dist == (T)0.0 ) {
+		return false;
+	}
+	T theta = ( x2 * ( a1.y - a2.y ) - y2 * ( a1.x - a2.x ) ) / dist;
+	if ( theta < (T)0.0 || theta > (T)1.0 ) {
+		return false;
+	}
+	intersection->x = a1.x + theta * x1;
+	intersection->y = a1.y + theta * y1;
+	return true;
 }
 
 template<typename T> 
@@ -457,15 +457,39 @@ bool TriangleT<T>::contains( const Vec2<T> &point ) const
 }
 
 template<typename T> 
-ci::Vec2<T> TriangleT<T>::intersection( const ci::Vec2<T> &point )
+T TriangleT<T>::distance( const Vec2<T> &point )
 {
-	return intersection( *this, point );
+	return distance( *this, point );
 }
 
 template<typename T> 
-ci::Vec2<T> TriangleT<T>::intersection( const ci::Vec2<T> &point ) const
+T TriangleT<T>::distance( const Vec2<T> &point ) const
 {
-	return intersection( *this, point );
+	return distance( *this, point );
+}
+
+template<typename T> 
+T TriangleT<T>::distanceSquared( const Vec2<T> &point )
+{
+	return distanceSquared( *this, point );
+}
+
+template<typename T> 
+T TriangleT<T>::distanceSquared( const Vec2<T> &point ) const
+{
+	return distanceSquared( *this, point );
+}
+
+template<typename T> 
+bool TriangleT<T>::intersection( const ci::Vec2<T> &point, Vec2<T> *i )
+{
+	return intersection( *this, point, i );
+}
+
+template<typename T> 
+bool TriangleT<T>::intersection( const ci::Vec2<T> &point, Vec2<T> *i ) const
+{
+	return intersection( *this, point, i );
 }
 
 template<typename T> 
@@ -482,7 +506,80 @@ bool TriangleT<T>::intersects( const TriangleT<T> &triangle ) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Point getter shortcuts
+template<typename T> 
+T TriangleT<T>::calcArea() 
+{ 
+	return calcArea( *this); 
+}
+
+template<typename T> 
+T TriangleT<T>::calcArea() const 
+{ 
+	return calcArea( *this); 
+}
+
+template<typename T> 
+RectT<T> TriangleT<T>::calcBoundingBox()
+{
+	return calcBoundingBox( *this );
+}
+
+template<typename T> 
+const RectT<T> TriangleT<T>::calcBoundingBox() const
+{
+	return calcBoundingBox( *this );
+}
+
+template<typename T> 
+Vec2<T> TriangleT<T>::calcCentroid() 
+{ 
+	return calcCentroid( *this );
+}
+
+template<typename T> 
+const Vec2<T> TriangleT<T>::calcCentroid() const 
+{ 
+	return calcCentroid( *this );
+}
+
+template<typename T> 
+Vec2<T> TriangleT<T>::calcSize()
+{
+	return calcBoundingBox( *this ).getSize();
+}
+
+template<typename T> 
+const Vec2<T> TriangleT<T>::calcSize() const
+{
+	return calcBoundingBox( *this ).getSize();
+}
+
+template<typename T> 
+T TriangleT<T>::calcWidth()
+{
+	return calcBoundingBox( *this ).getWidth();
+}
+
+template<typename T> 
+T TriangleT<T>::calcWidth() const
+{
+	return calcBoundingBox( *this ).getWidth();
+}
+
+template<typename T> 
+T TriangleT<T>::calcHeight()
+{
+	return calcBoundingBox( *this ).getHeight();
+}
+
+template<typename T> 
+T TriangleT<T>::calcHeight() const
+{
+	return calcBoundingBox( *this ).getHeight();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<typename T> 
 Vec2<T>& TriangleT<T>::a() 
 { 
@@ -519,32 +616,6 @@ const Vec2<T>& TriangleT<T>::c() const
 	return mApex; 
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-template<typename T> 
-T TriangleT<T>::distance( const Vec2<T> &point )
-{
-	return distance( *this, point );
-}
-
-template<typename T> 
-T TriangleT<T>::distance( const Vec2<T> &point ) const
-{
-	return distance( *this, point );
-}
-
-template<typename T> 
-T TriangleT<T>::distanceSquared( const Vec2<T> &point )
-{
-	return distanceSquared( *this, point );
-}
-
-template<typename T> 
-T TriangleT<T>::distanceSquared( const Vec2<T> &point ) const
-{
-	return distanceSquared( *this, point );
-}
-
 template<typename T> 
 Vec2<T>& TriangleT<T>::getApex() 
 { 
@@ -555,42 +626,6 @@ template<typename T>
 const Vec2<T>& TriangleT<T>::getApex() const 
 { 
 	return mApex; 
-}
-
-template<typename T> 
-T TriangleT<T>::getArea() 
-{ 
-	return mArea; 
-}
-
-template<typename T> 
-T TriangleT<T>::getArea() const 
-{ 
-	return mArea; 
-}
-
-template<typename T> 
-RectT<T> TriangleT<T>::getBounds()
-{
-	return mBounds;
-}
-
-template<typename T> 
-const RectT<T>& TriangleT<T>::getBounds() const
-{
-	return mBounds;
-}
-
-template<typename T> 
-Vec2<T>& TriangleT<T>::getCentroid() 
-{ 
-	return mCentroid; 
-}
-
-template<typename T> 
-const Vec2<T>& TriangleT<T>::getCentroid() const 
-{ 
-	return mCentroid; 
 }
 
 template<typename T> 
@@ -606,18 +641,6 @@ const Vec2<T>& TriangleT<T>::getDestination() const
 }
 
 template<typename T> 
-T TriangleT<T>::getHeight()
-{
-	return mBounds.getHeight();
-}
-
-template<typename T> 
-T TriangleT<T>::getHeight() const
-{
-	return mBounds.getHeight();
-}
-
-template<typename T> 
 Vec2<T>& TriangleT<T>::getOrigin() 
 {
 	return mOrigin; 
@@ -629,33 +652,8 @@ const Vec2<T>& TriangleT<T>::getOrigin() const
 	return mOrigin; 
 }
 
-template<typename T> 
-Vec2<T> TriangleT<T>::getSize()
-{
-	return mBounds.getSize();
-}
-
-template<typename T> 
-const Vec2<T> TriangleT<T>::getSize() const
-{
-	return mBounds.getSize();
-}
-
-template<typename T> 
-T TriangleT<T>::getWidth()
-{
-	return mBounds.getWidth();
-}
-
-template<typename T> 
-T TriangleT<T>::getWidth() const
-{
-	return mBounds.getWidth();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
-// Point setter shortcuts
 template<typename T> 
 void TriangleT<T>::a( const Vec2<T> &origin )
 {
@@ -674,7 +672,40 @@ void TriangleT<T>::c( const Vec2<T> &apex )
 	setApex( apex );
 }
 
+template<typename T> 
+void TriangleT<T>::set( const ci::Vec2<T> &origin, const ci::Vec2<T> &destination, const ci::Vec2<T> &apex )
+{
+	mApex = apex;
+	mDestination = destination;
+	mOrigin = origin;
+}
+
+template<typename T> 
+void TriangleT<T>::setApex( const Vec2<T> &apex )
+{
+	mApex = apex;
+}
+
+template<typename T> 
+void TriangleT<T>::setDestination( const Vec2<T> &destination )
+{
+	mDestination = destination;
+}
+
+template<typename T> 
+void TriangleT<T>::setOrigin( const Vec2<T> &origin )
+{
+	mOrigin = origin;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+TriangleT<T> TriangleT<T>::getCenteredFit( const TriangleT<T> &triangle )
+{
+	TriangleT<T> centered;
+	return centered;
+}
 
 template<typename T>
 void TriangleT<T>::include( const Vec2<T> &point )
@@ -694,14 +725,14 @@ void TriangleT<T>::include( const TriangleT<T> &triangle )
 template<typename T> 
 void TriangleT<T>::inflate( const Vec2<T> &scale )
 {
-	mApex -= mCentroid;
-	mDestination -= mCentroid;
-	mOrigin -= mCentroid; 
+	Vec2<T> centroid = calcCentroid( *this );
+	mApex -= centroid;
+	mDestination -= centroid;
+	mOrigin -= centroid; 
 	*this *= scale;
-	mApex += mCentroid;
-	mDestination += mCentroid;
-	mOrigin += mCentroid; 
-	update();
+	mApex += centroid;
+	mDestination += centroid;
+	mOrigin += centroid; 
 }
 
 template<typename T> 
@@ -716,33 +747,32 @@ template<typename T>
 void TriangleT<T>::offset( const Vec2<T> & offset )
 {
 	mApex += offset;
-	mCentroid += offset;
 	mDestination += offset;
-	update();
+	mOrigin += offset;
 }
 
 template<typename T> 
 void TriangleT<T>::offsetCenterTo( const ci::Vec2<T> &center )
 {
-	mApex = mApex - mCentroid + center;
-	mDestination = mDestination - mCentroid + center;
-	mOrigin = mOrigin - mCentroid + center;
-	update();
+	Vec2<T> centroid = calcCentroid( *this );
+	mApex = mApex - centroid + center;
+	mDestination = mDestination - centroid + center;
+	mOrigin = mOrigin - centroid + center;
 }
 
 template<typename T> 
 void TriangleT<T>::rotate( T radians )
 {
-	float angleA = calcAngle( mCentroid, mOrigin )		+ radians;
-	float angleB = calcAngle( mCentroid, mDestination ) + radians;
-	float angleC = calcAngle( mCentroid, mApex )		+ radians;
-	float distA = mCentroid.distance( mOrigin );
-	float distB = mCentroid.distance( mDestination );
-	float distC = mCentroid.distance( mApex );
+	Vec2<T> centroid = calcCentroid( *this );
+	T angleA = calcAngle( centroid, mOrigin )		+ radians;
+	T angleB = calcAngle( centroid, mDestination )	+ radians;
+	T angleC = calcAngle( centroid, mApex )			+ radians;
+	T distA = centroid.distance( mOrigin );
+	T distB = centroid.distance( mDestination );
+	T distC = centroid.distance( mApex );
 	mOrigin			= calcPoint( mOrigin,		distA, angleA );
 	mDestination	= calcPoint( mDestination,	distB, angleB );
 	mApex			= calcPoint( mApex,			distC, angleC );
-	update();
 }
 
 template<typename T> 
@@ -756,7 +786,7 @@ TriangleT<T> TriangleT<T>::rotated( T radians )
 template<typename T> 
 void TriangleT<T>::scale( T scale )
 {
-	Vec2<T> tl = mBounds.getUpperLeft();
+	Vec2<T> tl = calcBoundingBox( *this ).getUpperLeft();
 	mApex -= tl;
 	mDestination -= tl;
 	mOrigin -= tl; 
@@ -764,20 +794,19 @@ void TriangleT<T>::scale( T scale )
 	mApex += tl;
 	mDestination += tl;
 	mOrigin += tl; 
-	update();
 }
 
 template<typename T> 
 void TriangleT<T>::scaleCentered( T scale )
 {
-	mApex -= mCentroid;
-	mDestination -= mCentroid;
-	mOrigin -= mCentroid; 
+	Vec2<T> centroid = calcCentroid( *this );
+	mApex -= centroid;
+	mDestination -= centroid;
+	mOrigin -= centroid; 
 	*this *= scale;
-	mApex += mCentroid;
-	mDestination += mCentroid;
-	mOrigin += mCentroid; 
-	update();
+	mApex += centroid;
+	mDestination += centroid;
+	mOrigin += centroid; 
 }
 
 template<typename T> 
@@ -796,36 +825,6 @@ TriangleT<T> TriangleT<T>::scaledCentered( T scale )
 	return triangle;
 }
 
-template<typename T> 
-void TriangleT<T>::set( const ci::Vec2<T> &origin, const ci::Vec2<T> &destination, const ci::Vec2<T> &apex )
-{
-	mApex = apex;
-	mDestination = destination;
-	mOrigin = origin;
-	update();
-}
-
-template<typename T> 
-void TriangleT<T>::setApex( const Vec2<T> &apex )
-{
-	mApex = apex;
-	update();
-}
-
-template<typename T> 
-void TriangleT<T>::setDestination( const Vec2<T> &destination )
-{
-	mDestination = destination;
-	update();
-}
-
-template<typename T> 
-void TriangleT<T>::setOrigin( const Vec2<T> &origin )
-{
-	mOrigin = origin;
-	update();
-}
-
 template<typename T>
 TriangleT<T> TriangleT<T>::transformCopy( const MatrixAffine2<T> &matrix ) const
 {
@@ -839,11 +838,30 @@ TriangleT<T> TriangleT<T>::transformCopy( const MatrixAffine2<T> &matrix ) const
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename T> 
-void TriangleT<T>::update()
+TriangleT<T>::PointSort::PointSort( const ci::Vec2<T> &point, T distance )
 {
-	mArea = calcArea( *this );
-	mBounds = calcBoundingBox( *this );
-	mCentroid = calcCentroid( *this );
+	mDistance = distance;
+	mPoint = point;
+}
+
+template<typename T> 
+bool TriangleT<T>::PointSort::operator<( const PointSort &rhs ) const
+{
+	return mDistance < rhs.mDistance;
+}
+
+template<typename T> 
+bool TriangleT<T>::PointSort::operator==( const PointSort &rhs ) const
+{
+	return mDistance == rhs.mDistance && 
+		mPoint.x == rhs.mPoint.x && 
+		mPoint.y == rhs.mPoint.y;
+}
+
+template<typename T> 
+bool TriangleT<T>::PointSort::operator!=( const PointSort &rhs ) const
+{
+	return !( *this == rhs );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
