@@ -38,7 +38,9 @@
 
 #include "cinder/Rect.h"
 
+namespace cinder {
 template<typename T> class MatrixAffine2;
+}
 
 template<typename T>
 class TriangleT
@@ -104,8 +106,8 @@ public:
 	const ci::Vec2<T>&	getApex() const;
 	T					getArea();
 	T					getArea() const;
-	ci::Rect<T>			getBounds();
-	const ci::Rect<T>&	getBounds() const;
+	ci::RectT<T>		getBounds();
+	const ci::RectT<T>&	getBounds() const;
 	ci::Vec2<T>&		getCentroid();
 	const ci::Vec2<T>&	getCentroid() const;
 	ci::Vec2<T>&		getDestination();
@@ -149,7 +151,7 @@ public:
 	void				offset( const ci::Vec2<T> &position );
 	void				offsetCenterTo( const ci::Vec2<T> &offset );
 	void				rotate( T radians );
-	void				rotated( T radians );
+	TriangleT<T>		rotated( T radians );
 	void				scale( T scale );
 	TriangleT<T>		scaled( T scale );
 	void				scaleCentered( T scale );
@@ -158,7 +160,7 @@ public:
 	void				setApex( const ci::Vec2<T> &apex );
 	void				setDestination( const ci::Vec2<T> &destination );
 	void				setOrigin( const ci::Vec2<T> &origin );
-	TriangleT<T>		transformCopy( const class MatrixAffine2<T> &matrix ) const;
+	TriangleT<T>		transformCopy( const ci::MatrixAffine2<T> &matrix ) const;
 
 	///////////////////////////////////////////////////////////////////////////////
 
@@ -167,7 +169,7 @@ protected:
 	static T			calcAngle( const ci::Vec2<T> &a, const ci::Vec2<T> &b );
 	static T			calcArea( const TriangleT<T> &triangle );
 	static T			calcArea( const ci::Vec2<T> &a, const ci::Vec2<T> &b, const ci::Vec2<T> &c );
-	static ci::Rect<T>	calcBoundingBox( const TriangleT<T> &triangle );
+	static ci::RectT<T>	calcBoundingBox( const TriangleT<T> &triangle );
 	static ci::Vec2<T>	calcCentroid( const TriangleT<T> &triangle );
 	static ci::Vec2<T>	calcPoint( const ci::Vec2<T> &origin, T distance, T radians );
 	static ci::Vec2<T>	closestPoint( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
@@ -176,14 +178,14 @@ protected:
 	static T			distanceSquared( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
 	static TriangleT<T>	getCentered( const TriangleT<T> &triangle );
 	static ci::Vec2<T>	intersection( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
-	static bool			intersects( const TriangleT<T> &a, const Triangle &b );
+	static bool			intersects( const TriangleT<T> &a, const TriangleT<T> &b );
 
 	ci::Vec2<T>			mApex;			// C
 	ci::Vec2<T>			mDestination;	// B
 	ci::Vec2<T>			mOrigin;		// A
 
 	T					mArea;
-	ci::Rect<T>			mBounds;
+	ci::RectT<T>		mBounds;
 	ci::Vec2<T>			mCentroid;
 
 	void				update();
@@ -200,8 +202,6 @@ typedef TriangleT<float>	Trianglef;
 typedef TriangleT<double>	Triangled;
 
 namespace cinder { namespace gl {
-template<typename T>
-void					drawSolidTriangle( const TriangleT<T> &triangle, bool textureTriangle = false );
-template<typename T>
-void					drawStrokedTriangle( const TriangleT<T> &triangle );
+void					drawSolidTriangle( const Trianglef &triangle, bool textureTriangle = false );
+void					drawStrokedTriangle( const Trianglef &triangle );
 } }

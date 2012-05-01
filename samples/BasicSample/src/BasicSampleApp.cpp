@@ -65,7 +65,7 @@ private:
 	ci::Path2d						mLine;
 
 	// Triangles created from path
-	std::map<uint32_t, Triangle>	mTriangles;
+	std::map<uint32_t, Trianglef>	mTriangles;
 	void							triangulate();
 
 	// ID of selected triangle
@@ -89,7 +89,7 @@ void BasicSampleApp::draw()
 	// Draw triangles
 	glLineWidth( 2.0f );
 	gl::color( 1.0f, 0.25f, 0.5f );
-	for ( map<uint32_t, Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+	for ( map<uint32_t, Trianglef>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
 		if ( mSelectedId == triIt->first ) {
 			gl::drawSolidTriangle( triIt->second );
 		} else {
@@ -169,7 +169,7 @@ void BasicSampleApp::mouseUp( MouseEvent event )
 	mSelectedId = -1;
 
 	// Hit test triangles
-	for ( map<uint32_t, Triangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+	for ( map<uint32_t, Trianglef>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
 		if ( triIt->second.contains( position ) ) {
 			mSelectedId = triIt->first;
 			return;
@@ -207,7 +207,7 @@ void BasicSampleApp::triangulate()
 	Vec2f a, b, c;
 	for ( uint32_t i = 0; i < mesh.getNumTriangles(); i++ ) {
 		mesh.getTriangleVertices( i, &a, &b, &c );
-		Triangle triangle( c, b, a );
+		Trianglef triangle( c, b, a );
 		mTriangles[ i ] = triangle;
 	}
 

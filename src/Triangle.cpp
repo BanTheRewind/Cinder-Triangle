@@ -37,6 +37,7 @@
 #include "Triangle.h"
 
 #include "cinder/MatrixAffine2.h"
+#include "cinder/Ray.h"
 
 using namespace ci;
 using namespace std;
@@ -60,13 +61,13 @@ TriangleT<T> TriangleT<T>::one()
 	Vec2<T> a	= calcPoint( Vec2<T>::zero(), (T)1.0f, origin );
 	Vec2<T> b = calcPoint( Vec2<T>::zero(), (T)1.0f, dest );
 	Vec2<T> c = calcPoint( Vec2<T>::zero(), (T)1.0f, apex );
-	return Triangle( a, b, c );
+	return TriangleT<T>( a, b, c );
 }
 
 template<typename T>
 TriangleT<T> TriangleT<T>::zero()
 {
-	return Triangle();
+	return TriangleT<T>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,12 +286,12 @@ T TriangleT<T>::calcArea( const Vec2<T> &a, const Vec2<T> &b, const Vec2<T> &c )
 	T x2 = b.x - c.x;
 	T y2 = b.y - c.y;
 
-	// Area is half times base times height
+	// Area is half of base times height
 	return ( x1 * y2 - y1 * x2 ) * 0.5f;
 }
 
-template<typename T>
-Rect<T> TriangleT<T>::calcBoundingBox( const TriangleT<T> &triangle ) 
+template<typename T> 
+RectT<T> TriangleT<T>::calcBoundingBox( const TriangleT<T> &triangle ) 
 {
 	Vec2<T> a = triangle.mOrigin;
 	Vec2<T> b = triangle.mDestination;
@@ -303,7 +304,7 @@ Rect<T> TriangleT<T>::calcBoundingBox( const TriangleT<T> &triangle )
 	x2 = math<T>::max( x2, c.x );
 	T y2 = math<T>::max( a.y, b.y );
 	y2 = math<T>::max( y2, c.y );
-	return Rectf( x1, y1, x2, y2 );
+	return RectT<T>( x1, y1, x2, y2 );
 }
 
 template<typename T> 
@@ -367,13 +368,17 @@ bool TriangleT<T>::contains( const TriangleT<T> &triangle, const ci::Vec2<T> &p 
 template<typename T> 
 T TriangleT<T>::distance( const TriangleT<T> &triangle, const ci::Vec2<T> &p )
 {
-	ci::Ray ray( Vec3f( p ), Vec3f( triangle.mCentroid - p ) );
-	Vec3f vert0( triangle.mApex );
-	Vec3f vert1( triangle.mDestination );
-	Vec3f vert2( triangle.mOrigin );
-	T distance;
+	Vec2<T> a = triangle.mOrigin;
+	Vec2<T> b = triangle.mDestination;
+	Vec2<T> c = triangle.mApex;
+	Vec2<T> d = p - triangle.mCentroid;
+	Ray ray( Vec3f( (float)p.x, (float)p.y, 0.0f ), Vec3f( (float)d.x, (float)d.y, 0.0f ) );
+	Vec3f vert0( (float)c.x, (float)c.y, 0.0f );
+	Vec3f vert1( (float)b.x, (float)b.y, 0.0f );
+	Vec3f vert2( (float)a.x, (float)a.y, 0.0f );
+	float distance;
 	ray.calcTriangleIntersection( vert0, vert1, vert2, &distance );
-	return distance;
+	return -(T)distance;
 }
 
 template<typename T> 
@@ -523,7 +528,19 @@ T TriangleT<T>::distance( const Vec2<T> &point )
 }
 
 template<typename T> 
+T TriangleT<T>::distance( const Vec2<T> &point ) const
+{
+	return distance( *this, point );
+}
+
+template<typename T> 
 T TriangleT<T>::distanceSquared( const Vec2<T> &point )
+{
+	return distanceSquared( *this, point );
+}
+
+template<typename T> 
+T TriangleT<T>::distanceSquared( const Vec2<T> &point ) const
 {
 	return distanceSquared( *this, point );
 }
@@ -553,13 +570,13 @@ T TriangleT<T>::getArea() const
 }
 
 template<typename T> 
-Rectf TriangleT<T>::getBounds()
+RectT<T> TriangleT<T>::getBounds()
 {
 	return mBounds;
 }
 
 template<typename T> 
-const Rectf& TriangleT<T>::getBounds() const
+const RectT<T>& TriangleT<T>::getBounds() const
 {
 	return mBounds;
 }
@@ -813,15 +830,9 @@ template<typename T>
 TriangleT<T> TriangleT<T>::transformCopy( const MatrixAffine2<T> &matrix ) const
 {
 	TriangleT<T> result;
-	result.x1 = numeric_limits<T>::max();
-	result.x2 = -numeric_limits<T>::max();
-	result.y1 = numeric_limits<T>::max();
-	result.y2 = -numeric_limits<T>::max();
-	result.include( matrix.transformPoint( Vec2<T>( x1, y1 ) ) );
-	result.include( matrix.transformPoint( Vec2<T>( x2, y1 ) ) );
-	result.include( matrix.transformPoint( Vec2<T>( x2, y2 ) ) );
-	result.include( matrix.transformPoint( Vec2<T>( x1, y2 ) ) );
-	
+	result.include( matrix.transformPoint( mOrigin ) );
+	result.include( matrix.transformPoint( mDestination ) );
+	result.include( matrix.transformPoint( mApex ) );
 	return result;
 }
 
@@ -837,30 +848,30 @@ void TriangleT<T>::update()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "cinder/gl/gl.h"
+
 namespace cinder { namespace gl {
 
-template<typename T> 
-void drawSolidTriangle( const TriangleT<T> &triangle, bool textureTriangle )
+void drawSolidTriangle( const Trianglef &triangle, bool textureTriangle )
 {
 	// TO DO: calculate and set texture coords
 	glBegin( GL_TRIANGLE_STRIP );
 	{
-		gl::vertex( triangle.c() );
-		gl::vertex( triangle.b() );
-		gl::vertex( triangle.a() );
+		vertex( triangle.c() );
+		vertex( triangle.b() );
+		vertex( triangle.a() );
 	}
 	glEnd();
 }
 
-template<typename T> 
-void drawStrokedTriangle( const TriangleT<T> &triangle )
+void drawStrokedTriangle( const Trianglef &triangle )
 {
 	glBegin( GL_LINE_STRIP );
 	{
-		gl::vertex( triangle.c() );
-		gl::vertex( triangle.b() );
-		gl::vertex( triangle.a() );
-		gl::vertex( triangle.c() );
+		vertex( triangle.c() );
+		vertex( triangle.b() );
+		vertex( triangle.a() );
+		vertex( triangle.c() );
 	}
 	glEnd();
 }

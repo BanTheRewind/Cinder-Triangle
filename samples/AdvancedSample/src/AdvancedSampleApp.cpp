@@ -35,7 +35,7 @@
 */
 
 #include "cinder/app/AppBasic.h"
-#include "cinder/gl/gl.h"
+#include "cinder/params/Params.h"
 #include "cinder/Triangulate.h"
 #include "cinder/TriMesh.h"
 #include "Triangle.h"
@@ -53,12 +53,13 @@ public:
 
 	// Cinder callbacks
 	void							draw();
-	void							keyDown( ci::app::KeyEvent event );
 	void							mouseDown( ci::app::MouseEvent event );
 	void							mouseDrag( ci::app::MouseEvent event );
+	void							mouseMove( ci::app::MouseEvent event );
 	void							mouseUp( ci::app::MouseEvent event );
 	void							setup();
 	void							shutdown();
+	void							update();
 
 private:
 
@@ -67,22 +68,31 @@ private:
 
 	struct VelocityTriangle
 	{
-		VelocityTriangle( uint32_t id, const Triangle &triangle )
+		VelocityTriangle( uint32_t id, const Trianglef &triangle )
 			: mId( id ), mTriangle( triangle ), mVelocity( ci::Vec2f::zero() )
 		{
 		}
 		uint32_t					mId;
-		Triangle					mTriangle;
+		Trianglef					mTriangle;
 		ci::Vec2f					mVelocity;
 	};
 
 	// Triangles created from path
+	void							clear();
 	std::vector<VelocityTriangle>	mTriangles;
 	void							triangulate();
 
+	ci::Vec2f						mClosestPoint;
+	float							mDistancePoint;
+	float							mDistanceTriangle;
+
 	// ID of selected triangle
 	ci::Vec2f						mMouse;
+	bool							mMouseDown;
 	int32_t							mSelectedId;
+
+	bool							mFullScreen;
+	ci::params::InterfaceGl			mParams;
 
 };
 
@@ -90,6 +100,18 @@ private:
 using namespace ci;
 using namespace ci::app;
 using namespace std;
+
+// Reset
+void AdvancedSampleApp::clear()
+{
+	mClosestPoint = Vec2f::zero();
+	mDistancePoint = 0.0f;
+	mDistanceTriangle = 0.0f;
+	mLine = Path2d();
+	mMouseDown = false;
+	mSelectedId = -1;
+	mTriangles.clear();
+}
 
 // Render
 void AdvancedSampleApp::draw()
@@ -104,7 +126,7 @@ void AdvancedSampleApp::draw()
 
 		// Draw triangle and centroid
 		gl::color( 1.0f, 0.25f, 0.5f );
-		glLineWidth( 2.0f );
+		glLineWidth( 1.0f );
 		if ( mSelectedId == triIt->mId ) {
 			gl::drawSolidTriangle( triIt->mTriangle );
 		} else {
@@ -121,9 +143,21 @@ void AdvancedSampleApp::draw()
 		}
 		glEnd();
 
+		if ( !mMouseDown ) {
+			if ( mClosestPoint.length() > 0.0f ) {
+				glLineWidth( 0.25f );
+				glBegin( GL_LINE_STRIP );
+				{
+					gl::vertex( mMouse );
+					gl::vertex( mClosestPoint );
+				}
+				glEnd();
+			}
+		}
+
 		// Draw bounding box of selected triangle
 		if ( mSelectedId == triIt->mId ) {
-			glLineWidth( 0.5f );
+			glLineWidth( 0.25f );
 			gl::drawStrokedRect( triIt->mTriangle.getBounds() );
 		}
 
@@ -134,33 +168,8 @@ void AdvancedSampleApp::draw()
 	gl::color( Colorf::white() );
 	gl::draw( mLine );
 
-	// Write instructions
-	gl::drawString( "Drag mouse to draw", Vec2f( 20.0f, getWindowHeight() - 84.0f ) );
-	gl::drawString( "Select triangle to drag", Vec2f( 20.0f, getWindowHeight() - 68.0f ) );
-	gl::drawString( "SPACE = Clear screen", Vec2f( 20.0f, getWindowHeight() - 52.0f ) );
-	gl::drawString( "F = Toggle full screen", Vec2f( 20.0f, getWindowHeight() - 36.0f ) );
-	gl::drawString( "ESC = quit", Vec2f( 20.0f, getWindowHeight() - 20.0f ) );
-
-}
-
-// Handles key press
-void AdvancedSampleApp::keyDown( KeyEvent event )
-{
-
-	// Use keyboard to quit, toggle fullscreen, or clear data
-	switch ( event.getCode() ) {
-	case KeyEvent::KEY_ESCAPE:
-		quit();
-		break;
-	case KeyEvent::KEY_f:
-		setFullScreen( !isFullScreen() );
-		break;
-	case KeyEvent::KEY_SPACE:
-		mSelectedId = -1;
-		mLine = Path2d();
-		mTriangles.clear();
-		break;
-	}
+	// Draw params
+	mParams.draw();
 
 }
 
@@ -169,6 +178,7 @@ void AdvancedSampleApp::mouseDown( MouseEvent event )
 {
 
 	// Update mouse position
+	mMouseDown = true;
 	mMouse = event.getPos();
 
 	// Hit test triangles
@@ -216,22 +226,42 @@ void AdvancedSampleApp::mouseDrag( MouseEvent event )
 
 }
 
+// Handles mouse move
+void AdvancedSampleApp::mouseMove( MouseEvent event )
+{
+
+	// Update mouse position
+	mMouse = event.getPos();
+
+}
+
 // Handles mouse up
 void AdvancedSampleApp::mouseUp( MouseEvent event )
 {
-
-	// Reset selected ID
+	mMouseDown = false;
 	mSelectedId = -1;
-
 }
 
 // Set up
 void AdvancedSampleApp::setup()
 {
+	setWindowSize( 800, 600 );
+	mFullScreen = false;
+	clear();
 
-	// Initialize selected ID
-	mSelectedId = -1;
+	gl::enable( GL_LINE_SMOOTH );
+	glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
 
+	mParams = params::InterfaceGl( "PARAMS ", Vec2i( 200, 200 ) );
+	mParams.addText( "Drag mouse to draw" );
+	mParams.addText( "Select triangle to drag" );
+	mParams.addSeparator();
+	mParams.addButton( "Clear", bind( &AdvancedSampleApp::clear, this ), "key=space" );
+	mParams.addParam( "Toggle fullscreen", &mFullScreen, "key=f" );
+	mParams.addButton( "Quit", bind( &AdvancedSampleApp::quit, this ), "key=esc" );
+	mParams.addSeparator();
+	mParams.addParam( "Nearest point", &mDistancePoint, "", true );
+	mParams.addParam( "Nearest triangle", &mDistanceTriangle, "", true );
 }
 
 // Called on exit
@@ -254,11 +284,36 @@ void AdvancedSampleApp::triangulate()
 	Vec2f a, b, c;
 	for ( uint32_t i = 0; i < mesh.getNumTriangles(); i++ ) {
 		mesh.getTriangleVertices( i, &a, &b, &c );
-		Triangle triangle( c, b, a );
+		Trianglef triangle( c, b, a );
 		VelocityTriangle velTriangle( i, triangle );
 		mTriangles.push_back( velTriangle );
 	}
 
+}
+
+void AdvancedSampleApp::update()
+{
+	if ( mFullScreen != isFullScreen() ) {
+		setFullScreen( mFullScreen );
+		mFullScreen = isFullScreen();
+	}
+
+	if ( mMouseDown ) {
+		mClosestPoint = Vec2f::zero();
+		mDistancePoint = numeric_limits<float>::max();
+		mDistanceTriangle = numeric_limits<float>::max();
+
+		for ( vector<VelocityTriangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
+			const Trianglef& triangle = triIt->mTriangle;
+			float dist = triangle.distance( mMouse );
+			console() << dist << endl;
+			if ( dist < mDistanceTriangle ) {
+				mDistanceTriangle = dist;
+				mClosestPoint = triangle.closestPoint( mMouse );
+				mDistancePoint = mClosestPoint.distance( mMouse );
+			}
+		}
+	}
 }
 
 // Launch application
