@@ -95,7 +95,7 @@ void BasicSampleApp::draw()
 		} else {
 			gl::drawStrokedTriangle( triIt->second );
 		}
-		gl::drawSolidCircle( triIt->second.getCentroid(), 1.0f, 12 );
+		gl::drawSolidCircle( triIt->second.calcCentroid(), 1.0f, 12 );
 	}
 
 	// Draw outline

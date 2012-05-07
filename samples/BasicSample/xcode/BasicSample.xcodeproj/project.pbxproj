@@ -15,7 +15,6 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		434CE4BC14F4653F0055BB43 /* BasicSampleApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 434CE4BB14F4653F0055BB43 /* BasicSampleApp.cpp */; };
 		434CE4BF14F465580055BB43 /* Triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 434CE4BD14F465580055BB43 /* Triangle.cpp */; };
-		434CE4C514F465640055BB43 /* del_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 434CE4C014F465640055BB43 /* del_impl.cpp */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
 		53E3CDFC0E86099300238D2B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53E3CDFB0E86099300238D2B /* Carbon.framework */; };
@@ -37,11 +36,6 @@
 		434CE4BB14F4653F0055BB43 /* BasicSampleApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BasicSampleApp.cpp; path = ../src/BasicSampleApp.cpp; sourceTree = "<group>"; };
 		434CE4BD14F465580055BB43 /* Triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Triangle.cpp; path = ../../../src/Triangle.cpp; sourceTree = "<group>"; };
 		434CE4BE14F465580055BB43 /* Triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Triangle.h; path = ../../../src/Triangle.h; sourceTree = "<group>"; };
-		434CE4C014F465640055BB43 /* del_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = del_impl.cpp; path = ../../../src/triangle/del_impl.cpp; sourceTree = "<group>"; };
-		434CE4C114F465640055BB43 /* del_interface.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = del_interface.hpp; path = ../../../src/triangle/del_interface.hpp; sourceTree = "<group>"; };
-		434CE4C214F465640055BB43 /* dpoint.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dpoint.hpp; path = ../../../src/triangle/dpoint.hpp; sourceTree = "<group>"; };
-		434CE4C314F465640055BB43 /* triangle_impl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = triangle_impl.hpp; path = ../../../src/triangle/triangle_impl.hpp; sourceTree = "<group>"; };
-		434CE4C414F465640055BB43 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = triangle.h; path = ../../../src/triangle/triangle.h; sourceTree = "<group>"; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		53E3CDFB0E86099300238D2B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -75,7 +69,6 @@
 			children = (
 				434CE4BD14F465580055BB43 /* Triangle.cpp */,
 				434CE4BE14F465580055BB43 /* Triangle.h */,
-				432CD3CD14E740DD00603749 /* triangle */,
 			);
 			name = Triangle;
 			sourceTree = "<group>";
@@ -161,18 +154,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		432CD3CD14E740DD00603749 /* triangle */ = {
-			isa = PBXGroup;
-			children = (
-				434CE4C014F465640055BB43 /* del_impl.cpp */,
-				434CE4C114F465640055BB43 /* del_interface.hpp */,
-				434CE4C214F465640055BB43 /* dpoint.hpp */,
-				434CE4C314F465640055BB43 /* triangle_impl.hpp */,
-				434CE4C414F465640055BB43 /* triangle.h */,
-			);
-			name = triangle;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -235,7 +216,6 @@
 			files = (
 				434CE4BC14F4653F0055BB43 /* BasicSampleApp.cpp in Sources */,
 				434CE4BF14F465580055BB43 /* Triangle.cpp in Sources */,
-				434CE4C514F465640055BB43 /* del_impl.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -125,6 +125,7 @@ void AdvancedSampleApp::draw()
 	for ( vector<VelocityTriangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
 
 		// Draw triangle and centroid
+		Vec2f centroid = triIt->mTriangle.calcCentroid();
 		gl::color( 1.0f, 0.25f, 0.5f );
 		glLineWidth( 1.0f );
 		if ( mSelectedId == triIt->mId ) {
@@ -132,14 +133,14 @@ void AdvancedSampleApp::draw()
 		} else {
 			gl::drawStrokedTriangle( triIt->mTriangle );
 		}
-		gl::drawSolidCircle( triIt->mTriangle.getCentroid(), 1.0f, 12 );
+		gl::drawSolidCircle( centroid, 1.0f, 12 );
 
 		// Draw velocity
 		gl::color( Colorf::white() );
 		glBegin( GL_LINE_STRIP );
 		{
-			gl::vertex( triIt->mTriangle.getCentroid() );
-			gl::vertex( triIt->mTriangle.getCentroid() - triIt->mVelocity );
+			gl::vertex( centroid );
+			gl::vertex( centroid - triIt->mVelocity );
 		}
 		glEnd();
 
@@ -158,7 +159,7 @@ void AdvancedSampleApp::draw()
 		// Draw bounding box of selected triangle
 		if ( mSelectedId == triIt->mId ) {
 			glLineWidth( 0.25f );
-			gl::drawStrokedRect( triIt->mTriangle.getBounds() );
+			gl::drawStrokedRect( triIt->mTriangle.calcBoundingBox() );
 		}
 
 	}
@@ -201,7 +202,7 @@ void AdvancedSampleApp::mouseDrag( MouseEvent event )
 	// Calculate velocity of selected triangle
 	if ( mSelectedId >= 0 ) {
 		VelocityTriangle& triangle = mTriangles[ mSelectedId ];
-		Vec2f position = triangle.mTriangle.getCentroid();
+		Vec2f position = triangle.mTriangle.calcCentroid();
 		triangle.mTriangle.offsetCenterTo( mMouse );
 		triangle.mVelocity = mMouse - position;
 		return;
