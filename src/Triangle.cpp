@@ -248,6 +248,12 @@ bool TriangleT<T>::operator!=( const TriangleT<T> &rhs )
 	return !( *this == rhs );
 }
 
+template<typename T>
+bool TriangleT<T>::operator<( const TriangleT<T> &rhs )
+{
+	return *this != rhs;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename T>

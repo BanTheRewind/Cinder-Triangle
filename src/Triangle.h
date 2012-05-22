@@ -84,6 +84,7 @@ public:
 	// Comparison operators
 	bool				operator==( const TriangleT<T> &rhs );
 	bool				operator!=( const TriangleT<T> &rhs );
+	bool				operator<( const TriangleT<T> &rhs );
 
 	///////////////////////////////////////////////////////////////////////////////
 
