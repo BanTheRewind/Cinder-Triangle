@@ -166,6 +166,9 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 
+	ci::Vec3<T>			toBarycentric( const ci::Vec2<T> &p ) const;
+	ci::Vec2<T>			fromBarycentric( const ci::Vec3<T> &p ) const;
+
 protected:
 
 	static T			calcAngle( const ci::Vec2<T> &a, const ci::Vec2<T> &b );

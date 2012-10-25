@@ -36,6 +36,7 @@
 
 #include "Triangle.h"
 
+#include "cinder/Matrix22.h"
 #include "cinder/MatrixAffine2.h"
 
 using namespace ci;
@@ -338,26 +339,12 @@ Vec2<T> TriangleT<T>::closestPoint( const TriangleT<T> &triangle, const ci::Vec2
 
 }
 
-template<typename T> 
+template<typename T>
 bool TriangleT<T>::contains( const TriangleT<T> &triangle, const ci::Vec2<T> &p )
 {
-	Vec2<T> a = triangle.mOrigin;
-	Vec2<T> b = triangle.mDestination;
-	Vec2<T> c = triangle.mApex;
-
-	// Get area values using input position and two points from triangle
-	T area  = calcArea( a, b, c );
-	T area0 = calcArea( b, c, p );
-	T area1 = calcArea( c, a, p );
-	T area2 = calcArea( a, b, p );
-
-	// Sum the absolute values of each area
-	T areaSum = math<T>::abs( area0 ) + math<T>::abs( area1 ) + math<T>::abs( area2 );
-
-	// If sum of the three areas is the same as the triangle's 
-	// area, the point is inside
-	return areaSum == area;
-
+	Vec3<T> bary = triangle.toBarycentric( p );
+	return ( 0 <= bary.x ) && ( 0 <= bary.y ) &&
+		   ( bary.x + bary.y <= 1 );
 }
 
 template<typename T> 
@@ -839,6 +826,35 @@ TriangleT<T> TriangleT<T>::transformCopy( const MatrixAffine2<T> &matrix ) const
 	result.include( matrix.transformPoint( mDestination ) );
 	result.include( matrix.transformPoint( mApex ) );
 	return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+Vec3<T> TriangleT<T>::toBarycentric( const Vec2<T> &p ) const
+{
+
+	Vec2<T> a = mOrigin;
+	Vec2<T> b = mDestination;
+	Vec2<T> c = mApex;
+
+	Matrix22<T> m22( a.x - c.x, a.y - c.y,
+					 b.x - c.x, b.y - c.y );
+	T invDet = (T)1 / m22.determinant();
+
+	T l1 = invDet * ( ( b.y - c.y ) * ( p.x - c.x ) +
+						   ( c.x - b.x ) * ( p.y - c.y ) );
+	T l2 = invDet * ( ( c.y - a.y ) * ( p.x - c.x ) +
+						   ( a.x - c.x ) * ( p.y - c.y ) );
+	T l3 = 1 - l1 - l2;
+
+	return Vec3<T>( l1, l2, l3 );
+}
+
+template<typename T>
+Vec2<T> TriangleT<T>::fromBarycentric( const Vec3<T> &p ) const
+{
+	return Vec2<T>( p.x * mOrigin + p.y * mDestination + p.z * mApex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
