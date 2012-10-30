@@ -24,6 +24,9 @@
     <ClCompile Include="..\src\AdvancedSampleApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\Triangle.cpp">
+      <Filter>blocks\Cinder-Triangle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc">
