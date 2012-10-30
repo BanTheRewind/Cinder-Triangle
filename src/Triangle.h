@@ -89,14 +89,24 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 
 	// Measurement
+    T					calcAngle( const ci::Vec2<T> &point );
+    T					calcAngle( const ci::Vec2<T> &point ) const;
 	T					calcArea();
 	T					calcArea() const;
+	ci::Vec2<T>			calcBarycentricToCartesian( const ci::Vec3<T> &point );
+    ci::Vec2<T>			calcBarycentricToCartesian( const ci::Vec3<T> &point ) const;
 	ci::RectT<T>		calcBoundingBox();
-	const ci::RectT<T>	calcBoundingBox() const;
+	ci::RectT<T>        calcBoundingBox() const;
+    ci::Vec3<T>			calcCartesianToBarycentric( const ci::Vec2<T> &point );
+    ci::Vec3<T>			calcCartesianToBarycentric( const ci::Vec2<T> &point ) const;
+	ci::Vec2<T>			calcCartesianToPolar( const ci::Vec2<T> &point );
+	ci::Vec2<T>			calcCartesianToPolar( const ci::Vec2<T> &point ) const;
 	ci::Vec2<T>			calcCentroid();
-	const ci::Vec2<T>	calcCentroid() const;
+	ci::Vec2<T>         calcCentroid() const;
 	T					calcHeight();
 	T					calcHeight() const;
+	ci::Vec2<T>			calcPolarToCartesian( const ci::Vec2<T> &point );
+	ci::Vec2<T>			calcPolarToCartesian( const ci::Vec2<T> &point ) const;
 	ci::Vec2<T>			calcSize();
 	const ci::Vec2<T>	calcSize() const;
 	T					calcWidth();
@@ -148,39 +158,57 @@ public:
 	///////////////////////////////////////////////////////////////////////////////
 
 	// Transformation
+	TriangleT<T>		getCentered();
+    TriangleT<T>		getCentered() const;
 	TriangleT<T>		getCenteredFit( const TriangleT<T> &triangle );
+    TriangleT<T>		getCenteredFit( const TriangleT<T> &triangle ) const;
 	void				include( const ci::Vec2<T> &point );
 	void				include( const std::vector<ci::Vec2<T> > &points );
 	void				include( const TriangleT &triangle );
 	void				inflate( const ci::Vec2<T> &scale );
 	TriangleT<T>		inflated( const ci::Vec2<T> &scale );
+    TriangleT<T>		inflated( const ci::Vec2<T> &scale ) const;
 	void				offset( const ci::Vec2<T> &position );
 	void				offsetCenterTo( const ci::Vec2<T> &offset );
 	void				rotate( T radians );
 	TriangleT<T>		rotated( T radians );
+    TriangleT<T>		rotated( T radians ) const;
 	void				scale( T scale );
 	TriangleT<T>		scaled( T scale );
+    TriangleT<T>		scaled( T scale ) const;
 	void				scaleCentered( T scale );
 	TriangleT<T>		scaledCentered( T scale );
-	TriangleT<T>		transformCopy( const ci::MatrixAffine2<T> &matrix ) const;
+	TriangleT<T>		scaledCentered( T scale ) const;
+	TriangleT<T>		transformCopy( const ci::MatrixAffine2<T> &matrix );
+    TriangleT<T>		transformCopy( const ci::MatrixAffine2<T> &matrix ) const;
 
 	///////////////////////////////////////////////////////////////////////////////
 
 protected:
 
+	static T			calcAngle( const TriangleT<T> &triangle, const ci::Vec2<T> &point );
 	static T			calcAngle( const ci::Vec2<T> &a, const ci::Vec2<T> &b );
 	static T			calcArea( const TriangleT<T> &triangle );
 	static T			calcArea( const ci::Vec2<T> &a, const ci::Vec2<T> &b, const ci::Vec2<T> &c );
+    static ci::Vec2<T>	calcBarycentricToCartesian( const TriangleT<T> &triangle, const ci::Vec3<T> &point );
 	static ci::RectT<T>	calcBoundingBox( const TriangleT<T> &triangle );
+    static ci::Vec3<T>	calcCartesianToBarycentric( const TriangleT<T> &triangle, const ci::Vec2<T> &point );
+	static ci::Vec2<T>	calcCartesianToPolar( const ci::Vec2<T> &a, const ci::Vec2<T> &b );
 	static ci::Vec2<T>	calcCentroid( const TriangleT<T> &triangle );
-	static ci::Vec2<T>	calcPoint( const ci::Vec2<T> &origin, T distance, T radians );
+	static ci::Vec2<T>	calcPolarToCartesian( const ci::Vec2<T> &a, const ci::Vec2<T> &b );
 	static ci::Vec2<T>	closestPoint( const TriangleT<T> &triangle, const ci::Vec2<T> &p, int32_t n = 0 );
 	static bool			contains( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
 	static T			distance( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
 	static T			distanceSquared( const TriangleT<T> &triangle, const ci::Vec2<T> &p );
 	static TriangleT<T>	getCentered( const TriangleT<T> &triangle );
+	static TriangleT<T>	getCenteredFit( const TriangleT<T> &a, const TriangleT<T> &b );
+    static TriangleT<T>	inflated( const TriangleT<T> &triangle, const ci::Vec2<T> &scale );
 	static bool			intersection( const TriangleT<T> &triangle, const ci::Vec2<T> &p, ci::Vec2<T> *intersection );
 	static bool			intersects( const TriangleT<T> &a, const TriangleT<T> &b );
+    static TriangleT<T>	rotated( const TriangleT<T> &triangle, T radians );
+    static TriangleT<T>	scaled( const TriangleT<T> &triangle, T scale );
+    static TriangleT<T>	scaledCentered( const TriangleT<T> &triangle, T scale );
+    static TriangleT<T>	transformCopy( const TriangleT<T> &triangle, const ci::MatrixAffine2<T> &matrix );
 
 	ci::Vec2<T>			mApex;			// C
 	ci::Vec2<T>			mDestination;	// B
@@ -211,6 +239,8 @@ typedef TriangleT<float>	Trianglef;
 typedef TriangleT<double>	Triangled;
 
 namespace cinder { namespace gl {
-void					drawSolidTriangle( const Trianglef &triangle, bool textureTriangle = false );
-void					drawStrokedTriangle( const Trianglef &triangle );
+template<typename T>
+void					drawSolidTriangle( const TriangleT<T> &triangle, bool textureTriangle = false );
+template<typename T>
+void					drawStrokedTriangle( const TriangleT<T> &triangle );
 } }

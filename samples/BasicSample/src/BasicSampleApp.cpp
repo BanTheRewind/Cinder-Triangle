@@ -88,7 +88,7 @@ void BasicSampleApp::draw()
 
 	// Draw triangles
 	glLineWidth( 2.0f );
-	gl::color( 1.0f, 0.25f, 0.5f );
+	gl::color( Colorf( 1.0f, 0.25f, 0.5f ) );
 	for ( map<uint32_t, Trianglef>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
 		if ( mSelectedId == triIt->first ) {
 			gl::drawSolidTriangle( triIt->second );

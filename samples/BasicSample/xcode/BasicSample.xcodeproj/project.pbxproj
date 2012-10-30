@@ -64,20 +64,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0026CD271197C285007D86C6 /* Triangle */ = {
+		0026CD271197C285007D86C6 /* Cinder-Triangle */ = {
 			isa = PBXGroup;
 			children = (
 				434CE4BD14F465580055BB43 /* Triangle.cpp */,
 				434CE4BE14F465580055BB43 /* Triangle.h */,
 			);
-			name = Triangle;
+			name = "Cinder-Triangle";
 			sourceTree = "<group>";
 		};
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				434CE4BB14F4653F0055BB43 /* BasicSampleApp.cpp */,
-				0026CD271197C285007D86C6 /* Triangle */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -120,6 +119,7 @@
 		29B97314FDCFA39411CA2CEA /* msaFluidBasic */ = {
 			isa = PBXGroup;
 			children = (
+				AE78D354163F39450061BD96 /* blocks */,
 				29B97315FDCFA39411CA2CEA /* Headers */,
 				080E96DDFE201D6D7F000001 /* Source */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -152,6 +152,14 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AE78D354163F39450061BD96 /* blocks */ = {
+			isa = PBXGroup;
+			children = (
+				0026CD271197C285007D86C6 /* Cinder-Triangle */,
+			);
+			name = blocks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -235,6 +243,7 @@
 				GCC_PREFIX_HEADER = BasicSample_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
 					"$(CINDER_PATH)/lib/libcinder_d.a",
 					"-lcurl",
@@ -260,6 +269,7 @@
 				GCC_UNROLL_LOOPS = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
 					"$(CINDER_PATH)/lib/libcinder.a",
 					"-lcurl",

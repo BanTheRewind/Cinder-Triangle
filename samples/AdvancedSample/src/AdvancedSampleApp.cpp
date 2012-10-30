@@ -68,13 +68,13 @@ private:
 
 	struct VelocityTriangle
 	{
-		VelocityTriangle( uint32_t id, const Trianglef &triangle )
+		VelocityTriangle( uint32_t id, const Triangled &triangle )
 			: mId( id ), mTriangle( triangle ), mVelocity( ci::Vec2f::zero() )
 		{
 		}
 		uint32_t					mId;
-		Trianglef					mTriangle;
-		ci::Vec2f					mVelocity;
+		Triangled					mTriangle;
+		ci::Vec2d					mVelocity;
 	};
 
 	// Triangles created from path
@@ -82,12 +82,12 @@ private:
 	std::vector<VelocityTriangle>	mTriangles;
 	void							triangulate();
 
-	ci::Vec2f						mClosestPoint;
-	float							mDistancePoint;
-	float							mDistanceTriangle;
+	ci::Vec2d						mClosestPoint;
+	double							mDistancePoint;
+	double							mDistanceTriangle;
 
 	// ID of selected triangle
-	ci::Vec2f						mMouse;
+	ci::Vec2d						mMouse;
 	bool							mMouseDown;
 	int32_t							mSelectedId;
 
@@ -159,7 +159,9 @@ void AdvancedSampleApp::draw()
 		// Draw bounding box of selected triangle
 		if ( mSelectedId == triIt->mId ) {
 			glLineWidth( 0.25f );
-			gl::drawStrokedRect( triIt->mTriangle.calcBoundingBox() );
+			Rectd r = triIt->mTriangle.calcBoundingBox();
+			Rectf rect( (float)r.x1, (float)r.y1, (float)r.x2, (float)r.y2 );
+			gl::drawStrokedRect( rect );
 		}
 
 	}
@@ -285,7 +287,7 @@ void AdvancedSampleApp::triangulate()
 	Vec2f a, b, c;
 	for ( uint32_t i = 0; i < mesh.getNumTriangles(); i++ ) {
 		mesh.getTriangleVertices( i, &a, &b, &c );
-		Trianglef triangle( c, b, a );
+		Triangled triangle( (Vec2d)c, (Vec2d)b, (Vec2d)a );
 		VelocityTriangle velTriangle( i, triangle );
 		mTriangles.push_back( velTriangle );
 	}
@@ -301,13 +303,12 @@ void AdvancedSampleApp::update()
 
 	if ( mMouseDown ) {
 		mClosestPoint = Vec2f::zero();
-		mDistancePoint = numeric_limits<float>::max();
-		mDistanceTriangle = numeric_limits<float>::max();
+		mDistancePoint = numeric_limits<double>::max();
+		mDistanceTriangle = numeric_limits<double>::max();
 
 		for ( vector<VelocityTriangle>::const_iterator triIt = mTriangles.begin(); triIt != mTriangles.end(); ++triIt ) {
-			const Trianglef& triangle = triIt->mTriangle;
-			float dist = triangle.distance( mMouse );
-			console() << dist << endl;
+			const Triangled& triangle = triIt->mTriangle;
+			double dist = triangle.distance( mMouse );
 			if ( dist < mDistanceTriangle ) {
 				mDistanceTriangle = dist;
 				mClosestPoint = triangle.closestPoint( mMouse );
