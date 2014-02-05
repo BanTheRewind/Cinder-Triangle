@@ -135,7 +135,6 @@ public:
 	void				scaleCentered( T scale );
 	TriangleT<T>		scaledCentered( T scale ) const;
     TriangleT<T>		transformCopy( const ci::MatrixAffine2<T>& matrix ) const;
-protected:
 
 	static T			calcAngle( const TriangleT<T>& triangle, const ci::Vec2<T>& point );
 	static T			calcAngle( const ci::Vec2<T>& a, const ci::Vec2<T>& b );
@@ -160,7 +159,7 @@ protected:
     static TriangleT<T>	scaled( const TriangleT<T>& triangle, T scale );
     static TriangleT<T>	scaledCentered( const TriangleT<T>& triangle, T scale );
     static TriangleT<T>	transformCopy( const TriangleT<T>& triangle, const ci::MatrixAffine2<T>& matrix );
-
+protected:
 	ci::Vec2<T>			mApex;			// C
 	ci::Vec2<T>			mDestination;	// B
 	ci::Vec2<T>			mOrigin;		// A
